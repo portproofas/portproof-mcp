@@ -40,6 +40,33 @@ pricing, service status and current coverage without an API key.
 }
 ```
 
+### Claude Desktop
+
+Open **Settings → Developer → Edit Config** and merge the JSON above into
+`claude_desktop_config.json`. Keep any existing entries under `mcpServers`.
+Save the file, fully quit Claude Desktop, then reopen it.
+[Official setup instructions](https://modelcontextprotocol.io/docs/develop/connect-local-servers).
+
+### Cursor
+
+Merge the JSON above into your personal `~/.cursor/mcp.json` file. This makes
+Portproof available across your projects without storing account configuration
+in a project repository. Check the server in Cursor's MCP settings.
+[Official configuration guide](https://cursor.com/docs/mcp).
+
+### Claude Code
+
+Register Portproof in your personal configuration:
+
+```sh
+claude mcp add --transport stdio --scope user portproof -- npx -y @portproof/mcp@0.2.1
+claude mcp get portproof
+```
+
+On native Windows, use `cmd /c npx` in place of `npx` in the first command.
+Inside Claude Code, `/mcp` shows the connection status.
+[Official stdio setup and user scope](https://code.claude.com/docs/en/mcp).
+
 ### Connect your account
 
 Create a key in [your Portproof dashboard](https://portproof.org/app/keys), then
@@ -63,6 +90,11 @@ Keep the real value in your MCP client's private configuration or secret store.
 Never commit it to a repository or put it into a prompt. Reading a traffic balance
 requires `ports:read`; building proxy URLs, testing connections and buying traffic
 require `ports:write`.
+
+For Claude Desktop and Cursor, update the same personal configuration file used
+above. For Claude Code, add the `env` object to the `portproof` entry under
+`mcpServers` in `~/.claude.json`, then restart the client. Preserve its other
+settings. Enter the key in that private file rather than a terminal command.
 
 | Setting | Meaning |
 | --- | --- |
@@ -93,8 +125,11 @@ integrity and published file hashes.
 ### Run this mirror locally
 
 ```sh
-npm install --ignore-scripts --no-audit --no-fund
+git clone https://github.com/portproofas/portproof-mcp.git
+cd portproof-mcp
+npm ci --ignore-scripts --no-audit --no-fund
 npm run check
+npm test
 node dist/index.js --help
 ```
 
@@ -102,6 +137,11 @@ For a local MCP client, use `node` with the absolute path to `dist/index.js`.
 No build step is required. `package.json` is adapted for standalone installation
 and marked private to prevent accidentally republishing the mirror. The npm
 package's original manifest is retained as `upstream-package.json`.
+
+The lockfile fixes the dependency versions used by this checkout. GitHub Actions
+runs the syntax and smoke checks on Node.js 20, 22 and 24, including a Windows
+check on Node.js 22. The smoke tests check the published-file hashes, stdio tool
+discovery and purchase guards without using an account or calling the live API.
 
 ## Documentation and discovery
 
