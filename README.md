@@ -1,30 +1,49 @@
-# Portproof MCP server
+[![Portproof: mobile and residential proxies. Pay per GB.](assets/portproof-banner.png)](https://portproof.org)
 
-Agent tools for [Portproof](https://portproof.org): proxy traffic by the GB on
-shared mobile 4G/5G and residential pools.
+# Portproof MCP
 
-This repository is a **release mirror** of the published
-[`@portproof/mcp`](https://www.npmjs.com/package/@portproof/mcp) package, version
-**0.2.1**. It contains the published JavaScript bundle, not the private shop or
-the original TypeScript development workspace. The bundle's SHA-256 and npm
-tarball integrity are recorded in [release-provenance.json](release-provenance.json).
+**Connect your agent to Portproof.**
 
-## What it does
+Check your GB balance, choose a pool and build a proxy connection from your MCP
+client. Mobile 4G/5G and residential traffic share one prepaid balance.
 
-- Read current prices, service status and countries with devices online.
-- Check your purchased, used and remaining GB.
-- Build HTTP or SOCKS5 proxy URLs with a selected pool, country and rotation mode.
-- Test a proxy connection using your traffic balance.
-- Buy traffic from your wallet with explicit confirmation and terms acceptance.
+[Website](https://portproof.org) · [Setup guide](https://portproof.org/guides/proxy-mcp-server-for-ai-agents) · [Documentation](https://portproof.org/docs) · [npm](https://www.npmjs.com/package/@portproof/mcp) · [Status](https://portproof.org/status)
+
+Local stdio server · Node.js 20+ · MIT · `@portproof/mcp@0.2.1`
+
+## From settings to a connection
+
+| Your workflow | MCP tools |
+| --- | --- |
+| Check pricing and current coverage | `get_pricing`, `list_countries`, `get_status` |
+| See your remaining traffic | `get_traffic` |
+| Choose HTTP or SOCKS5, country and rotation | `build_proxy_url` |
+| Test a connection | `test_connection` |
+| Buy traffic with your confirmation | `buy_traffic` |
 
 Both pools are shared. A sticky session keeps the same device while it is online;
-its IP address may still change. Use the service for lawful price monitoring,
-ad verification, market research, QA, geo-testing and agent workflows, following
-the destination site's terms and Portproof's [acceptable-use policy](https://portproof.org/legal/aup).
+its IP address may still change.
 
 ## Connect an MCP client
 
-Requires **Node.js 20 or newer** and a client supporting local **stdio** servers.
+Add this to a client supporting local **stdio** MCP servers. You can explore
+pricing, service status and current coverage without an API key.
+
+```json
+{
+  "mcpServers": {
+    "portproof": {
+      "command": "npx",
+      "args": ["-y", "@portproof/mcp@0.2.1"]
+    }
+  }
+}
+```
+
+### Connect your account
+
+Create a key in [your Portproof dashboard](https://portproof.org/app/keys), then
+use this account-enabled configuration:
 
 ```json
 {
@@ -40,13 +59,10 @@ Requires **Node.js 20 or newer** and a client supporting local **stdio** servers
 }
 ```
 
-Create a key in [your Portproof dashboard](https://portproof.org/app/keys).
 Keep the real value in your MCP client's private configuration or secret store.
-Never commit it to a repository or put it into a prompt.
-
-Public tools work without a key; omit the `env` block to use those. Reading a
-traffic balance requires `ports:read`; building proxy URLs, testing connections
-and buying traffic require `ports:write`.
+Never commit it to a repository or put it into a prompt. Reading a traffic balance
+requires `ports:read`; building proxy URLs, testing connections and buying traffic
+require `ports:write`.
 
 | Setting | Meaning |
 | --- | --- |
@@ -67,7 +83,14 @@ The published bundle also exposes port-management tools; actual availability and
 eligibility are determined by the service. See [the documentation](https://portproof.org/docs)
 for the current offer and tool behavior.
 
-## Run this mirror locally
+## About this repository
+
+This is a **release mirror** of `@portproof/mcp` **0.2.1**, containing the published
+JavaScript bundle. The shop and original TypeScript development workspace remain
+private. [Release provenance](release-provenance.json) records the npm tarball
+integrity and published file hashes.
+
+### Run this mirror locally
 
 ```sh
 npm install --ignore-scripts --no-audit --no-fund
@@ -91,6 +114,16 @@ package's original manifest is retained as `upstream-package.json`.
 `server.json` describes the existing npm release. Its repository field points to
 this mirror; updating that local file does not update the hosted Registry.
 
+## Use responsibly
+
+Use Portproof for lawful price monitoring, ad verification, market research,
+QA, geo-testing and agent workflows. Follow each destination site's terms and
+Portproof's [acceptable-use policy](https://portproof.org/legal/aup).
+
 ## License
 
 [MIT](LICENSE). Runtime dependencies retain their own licenses.
+
+---
+
+**Portproof** · [Get proxies](https://portproof.org/shop) · [Contact support](mailto:support@portproof.org)
