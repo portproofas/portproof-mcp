@@ -1,0 +1,38 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "org.portproof/mcp",
+  "description": "Proxy traffic by the GB on shared mobile 4G/5G and residential pools, paid in crypto.",
+  "title": "Portproof",
+  "version": "0.2.1",
+  "websiteUrl": "https://portproof.org",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@portproof/mcp",
+      "version": "0.2.1",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "description": "Portproof API key from the dashboard (API keys). Without it only pricing, status and countries online now work.",
+          "format": "string",
+          "isSecret": true,
+          "name": "PORTPROOF_API_KEY"
+        },
+        {
+          "description": "API origin; /v1 is appended. Leave unset for the live shop.",
+          "format": "string",
+          "default": "https://api.portproof.org",
+          "name": "PORTPROOF_API_URL"
+        }
+      ]
+    }
+  ],
+  "repository": {
+    "url": "https://github.com/portproofas/portproof-mcp",
+    "source": "github"
+  }
+}

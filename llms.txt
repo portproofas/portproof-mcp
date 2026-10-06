@@ -1,0 +1,42 @@
+# Portproof MCP server
+
+> Proxy traffic by the GB: one prepaid GB balance per organisation, usable on two shared pools, mobile 4G/5G (carrier modems) and residential (opt-in peer devices). Pool, country, rotation and session are chosen in the proxy username, so one credential serves everything. The pools are shared: the traffic is never dedicated, private, static or unlimited, and a sticky session keeps the same device while the carrier may still change its IP. Countries online now come from list_countries; never state a country count from memory. Dedicated mobile ports (one modem, one SIM, one customer; by the day, week or month) are sold beside the pools: get_pricing lists the SKUs on sale. Paid in cryptocurrency. This stdio MCP server (npm package @portproof/mcp) exposes the Portproof API (base `PORTPROOF_API_URL` + `/v1`, default https://api.portproof.org; key `PORTPROOF_API_KEY`) as nineteen tools.
+
+## Traffic tools
+
+- get_traffic {} -> GB total / used / left, expiry (validity_days 0 = GB never expire), limits, connection details with the password masked (null unless the key holds ports:write). Key scope ports:read.
+- list_countries {} -> devices online now per pool and country, counts only (exit addresses are never listed). Public.
+- build_proxy_url { pool, country, rotation, session?, protocol?, reveal_password? } -> username, URL and curl / Python / Node / Playwright snippets; password masked unless reveal_password is true. Key scope ports:write.
+- test_connection { pool?, country?, rotation? } -> ok, exit IP, latency, error_code; exit_country is normally null (no country check); never report the requested country as the exit country. 6 per minute. Key scope ports:write.
+- buy_traffic { gb | trial:true, accept_terms:true, confirm:true, idempotency_key } -> order with gb and cost_cents as the server recorded them. Charges the wallet. accept_terms records that the user accepts the terms, the acceptable-use policy and the immediate start of the service. Key scope ports:write.
+
+## Port tools (dedicated mobile ports)
+
+- get_pricing {} -> field traffic (per-GB tier table, packages, trial, validity) and field skus (port price table; buy_via ports or cart; Partner network SKUs only while on sale for the caller's organisation). Public.
+- search_inventory { country?, carrier? } -> available Own network ports per site/carrier with carrier_id. Public.
+- quote { sku, term, quantity } -> unit_cents, discount_pct, total_cents, currency, charged:false; for a Partner network SKU price_cents and shop_url instead, or not_on_sale. Public.
+- buy_port { sku, term, carrier_id?, auto_renew?, confirm:true, idempotency_key } -> port, proxy_urls, cost_cents, currency. Charges money. A Partner network SKU (buy_via "cart" in get_pricing) is bought in the web shop: the answer is purchased:false, charged:false, price_cents and shop_url, or not_on_sale.
+- list_ports { limit?, cursor? } -> compact port summaries (label, network, no credentials), next_cursor. A Partner network port has no site_code.
+- get_port { port_id } -> full Port with label, network, credentials (if owned; Partner network ports carry credentials.http and credentials.socks5, which may differ in every field), capabilities, renewal, rotation_url (the Portproof link that rotates the IP) and proxy_urls built from each protocol's own set.
+- rotate { port_id, confirm:true, idempotency_key } -> rotated, reason, old_ip4, new_ip4, elapsed_ms and the signed rotation record. Waits up to 180 s in all, following the status link when the first answer is 202; status pending with rotation_id when still running. No charge.
+- set_rotation_schedule { port_id, interval_s (0 = sticky, else 60..86400), confirm:true, idempotency_key } -> rotation_interval_s, sticky. No charge.
+- renew_port { port_id, confirm:true, idempotency_key } -> renewed, ends_at, auto_renew, cost_cents, currency. One more term from the account balance. Charges money.
+- set_auto_renew { port_id, enabled, confirm:true, idempotency_key } -> auto_renew, ends_at. Off: the port ends at the end of its term. No charge now.
+- get_passport { port_id } -> port details (API object passport) with label and network. Never credentials.
+- get_receipt { receipt_id } -> rotation record plus signature { verified, key_id, reason, keys_url } checked against <API origin>/.well-known/portproof-keys.json.
+- get_usage { port_id, from?, to?, granularity? } -> buckets, totals, data[]. Default granularity hour.
+- get_status {} -> platform, sites, carriers, public incidents, support. Public.
+
+## Rules
+
+- buy_traffic, buy_port, renew_port, rotate, set_rotation_schedule and set_auto_renew are refused (error code confirmation_required / idempotency_key_required, no API call made) unless confirm is exactly true and idempotency_key is a non-empty printable string; buy_traffic is also refused (terms_acceptance_required) without accept_terms: true. Ask the user before confirming. A refused purchase stays stored under its key for 24 h, so buy with a new key after fixing the cause. Reuse an idempotency_key only to retry the identical request; the API answers idempotency_conflict (409) when a key is reused for a different purchase.
+- cost_cents is present whenever money moved (buy_traffic, buy_port, renew_port). quote never charges.
+- Every response is compact JSON in one text block. Errors: {"error":{code,status,title,detail,retry_after?,errors?}} using API problem codes: insufficient_funds, kyb_required_for_volume, trial_already_used, traffic_not_purchased, kyb_required, no_inventory, use_cart, conflict, port_cooldown (retry_after seconds), rescore_quota, insufficient_scope, unauthorized, not_found, validation_failed, idempotency_conflict, rate_limited; local codes: confirmation_required, idempotency_key_required, terms_acceptance_required, not_on_sale, api_unreachable, timeout, http_error, config_missing (no PORTPROOF_API_KEY), unexpected_response.
+- Ids are prefixed ULIDs: prt_ ports, rot_ rotations (rotation records), car_ carriers, ord_ orders.
+- Money is integer cents in EUR (the us-4g port SKU is USD). Times are ISO 8601 UTC.
+
+## Setup
+
+- Run: npx -y @portproof/mcp (Node.js 20 or newer) with PORTPROOF_API_KEY in the environment. PORTPROOF_API_URL is optional and defaults to https://api.portproof.org.
+- Client config: {"mcpServers":{"portproof":{"command":"npx","args":["-y","@portproof/mcp"],"env":{"PORTPROOF_API_KEY":"pk_live_..."}}}}. Claude Desktop, Claude Code and Cursor snippets are in README.md.
+- API keys are created in the dashboard at https://portproof.org/app/keys; there is no sandbox, every key acts on the real balance.

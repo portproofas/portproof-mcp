@@ -1,0 +1,58 @@
+{
+  "name": "@portproof/mcp",
+  "version": "0.2.1",
+  "type": "module",
+  "description": "MCP server for Portproof: proxy traffic by the GB on shared mobile 4G/5G and residential pools, paid in crypto, as tools for AI agents",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "proxy",
+    "proxies",
+    "mobile-proxy",
+    "residential-proxy",
+    "4g",
+    "5g",
+    "ai-agents",
+    "claude",
+    "cursor",
+    "price-monitoring",
+    "geo-testing"
+  ],
+  "homepage": "https://portproof.org",
+  "license": "MIT",
+  "author": "Portproof",
+  "mcpName": "org.portproof/mcp",
+  "bin": {
+    "portproof-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist/index.js",
+    "llms.txt"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json --noEmit && node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.scripts.json --noEmit",
+    "test": "vitest run",
+    "smoke": "tsx scripts/smoke.ts",
+    "smoke:stub": "tsx scripts/smoke.ts --stub",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm run test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "ulid": "^3.0.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@portproof/shared": "*",
+    "esbuild": "^0.25.12"
+  }
+}

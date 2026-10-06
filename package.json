@@ -1,0 +1,52 @@
+{
+  "name": "@portproof/mcp",
+  "version": "0.2.1",
+  "type": "module",
+  "description": "MCP server for Portproof: proxy traffic by the GB on shared mobile 4G/5G and residential pools, paid in crypto, as tools for AI agents",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "proxy",
+    "proxies",
+    "mobile-proxy",
+    "residential-proxy",
+    "4g",
+    "5g",
+    "ai-agents",
+    "claude",
+    "cursor",
+    "price-monitoring",
+    "geo-testing"
+  ],
+  "homepage": "https://portproof.org",
+  "license": "MIT",
+  "author": "Portproof",
+  "mcpName": "org.portproof/mcp",
+  "bin": {
+    "portproof-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist/index.js",
+    "llms.txt"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check": "node --check dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "ulid": "^3.0.0",
+    "zod": "^3.25.0"
+  },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/portproofas/portproof-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/portproofas/portproof-mcp/issues"
+  }
+}

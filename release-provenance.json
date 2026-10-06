@@ -1,0 +1,14 @@
+{
+  "name": "@portproof/mcp",
+  "version": "0.2.1",
+  "tarball": "https://registry.npmjs.org/@portproof/mcp/-/mcp-0.2.1.tgz",
+  "integrity": "sha512-Apv89JnqQTR3Me+Tmmv9ak5UFP1tvjP6yWT41a3szzbxKqrKtr26oA8wrVnZIRgNu8mpRa55+RFH9W+eEW99fQ==",
+  "published_file_sha256": {
+    "LICENSE": "24b2af2fd0d305cc0994e929ef0df619f138ac60af0019306881533e01b5f756",
+    "dist/index.js": "64a48b09ba31baf23a001f12b47253bae3fc436dea9edff3d778f1d124864d61",
+    "package.json": "81f473cd33766405bd519e31c8a888653b2586c58ff56ba83967830f4ce8ac2f",
+    "README.md": "bdf8758678e3c121a8259b3c9fbdd54f1c8fec16c9d8f84d70f80d6e0b27f1c1",
+    "llms.txt": "cee27e46b2d1500bd84d0c8cca6804b0c4a5743cf01ce0bf1c2a2f78c3aad2c2"
+  },
+  "notes": "dist/index.js, LICENSE, llms.txt and upstream-package.json retain published bytes. README and root package metadata are maintained for this release mirror. server.json adds the proposed GitHub repository; the hosted Registry has not been updated."
+}
