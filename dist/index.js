@@ -47,7 +47,15 @@ var ID_PREFIXES = [
   "opc",
   "opm",
   "opt",
-  "opx"
+  "opx",
+  "dga",
+  "dgo",
+  "dgm",
+  "dgq",
+  "rfr",
+  "jev",
+  "crn",
+  "cfo"
 ];
 var ULID_RE = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 var prefixSet = /* @__PURE__ */ new Set(ID_PREFIXES);
@@ -92,7 +100,6 @@ var ORDER_STATUSES = [
   "cancelled",
   "refunded"
 ];
-var TRAFFIC_TRIAL = { sku: "traffic-trial", gb: 0.5, price_cents: 290 };
 var TRAFFIC_MOBILE_COUNTRIES = ["US", "GB", "FR", "NL", "PL", "GE"];
 var TRAFFIC_PROTOCOLS = ["http", "socks5"];
 var OPS_PRINCIPALS = ["admin-key", "claude", "codex"];
@@ -137,150 +144,173 @@ function paginated(item) {
   return z.object({ data: z.array(item), next_cursor: z.string().nullable() });
 }
 
-import { z as z3 } from "zod";
-
 import { z as z2 } from "zod";
-var ProxyCredentialDto = /* @__PURE__ */ z2.object({
-  host: /* @__PURE__ */ z2.string().min(1),
-  port: /* @__PURE__ */ z2.number().int().min(1).max(65535),
-  username: /* @__PURE__ */ z2.string().min(1),
-  password: /* @__PURE__ */ z2.string().min(1)
+var ModemIpFamily = /* @__PURE__ */ z2.enum(["ipv4", "ipv6", "hostname", "unknown"]);
+var count = /* @__PURE__ */ z2.number().int().min(0).max(Number.MAX_SAFE_INTEGER).nullable();
+var ModemStockFacts = /* @__PURE__ */ z2.object({
+  stock: count,
+  ipv4: count,
+  ipv6: count,
+  native_ipv6: /* @__PURE__ */ z2.boolean().nullable(),
+  openvpn: count,
+  os_profile: count
 });
-var PortCapabilitiesDto = /* @__PURE__ */ z2.object({
-  replace: /* @__PURE__ */ z2.boolean(),
-  cancel: /* @__PURE__ */ z2.boolean(),
-  allowlist: /* @__PURE__ */ z2.boolean(),
-  auto_swap: /* @__PURE__ */ z2.boolean(),
-  rotation_interval: /* @__PURE__ */ z2.boolean(),
-  password_change: /* @__PURE__ */ z2.boolean()
+var ModemStockFeatures = /* @__PURE__ */ ModemStockFacts.extend({ reported_at: /* @__PURE__ */ z2.string().datetime() });
+var ModemDeviceFacts = /* @__PURE__ */ z2.object({
+  http_host: ModemIpFamily,
+  socks5_host: ModemIpFamily,
+  egress: /* @__PURE__ */ z2.enum(["ipv4", "ipv6", "unknown"]),
+  native_ipv6: /* @__PURE__ */ z2.boolean().nullable(),
+  openvpn: /* @__PURE__ */ z2.boolean().nullable(),
+  os_profile: /* @__PURE__ */ z2.boolean().nullable()
+});
+var ModemDeviceFeatures = /* @__PURE__ */ ModemDeviceFacts.extend({ reported_at: /* @__PURE__ */ z2.string().datetime() });
+
+import { z as z4 } from "zod";
+
+import { z as z3 } from "zod";
+var ProxyCredentialDto = /* @__PURE__ */ z3.object({
+  host: /* @__PURE__ */ z3.string().min(1),
+  port: /* @__PURE__ */ z3.number().int().min(1).max(65535),
+  username: /* @__PURE__ */ z3.string().min(1),
+  password: /* @__PURE__ */ z3.string().min(1)
+});
+var PortCapabilitiesDto = /* @__PURE__ */ z3.object({
+  replace: /* @__PURE__ */ z3.boolean(),
+  cancel: /* @__PURE__ */ z3.boolean(),
+  allowlist: /* @__PURE__ */ z3.boolean(),
+  auto_swap: /* @__PURE__ */ z3.boolean(),
+  rotation_interval: /* @__PURE__ */ z3.boolean(),
+  password_change: /* @__PURE__ */ z3.boolean()
 });
 
-var Subscription = /* @__PURE__ */ z3.object({
+var Subscription = /* @__PURE__ */ z4.object({
   id: /* @__PURE__ */ idSchema("sub"),
   org_id: /* @__PURE__ */ idSchema("org"),
   port_id: /* @__PURE__ */ idSchema("prt"),
-  sku: /* @__PURE__ */ z3.string().min(1),
+  sku: /* @__PURE__ */ z4.string().min(1),
   term: Term,
   price_cents: Cents,
   currency: Currency,
   starts_at: IsoDateTime,
   ends_at: IsoDateTime,
-  auto_renew: /* @__PURE__ */ z3.boolean(),
+  auto_renew: /* @__PURE__ */ z4.boolean(),
   state: SubscriptionState,
-  provider_ref: /* @__PURE__ */ z3.string().nullable(),
+  provider_ref: /* @__PURE__ */ z4.string().nullable(),
   created_at: IsoDateTime,
   updated_at: IsoDateTime
 });
-var PortCarrier = /* @__PURE__ */ z3.object({
+var PortCarrier = /* @__PURE__ */ z4.object({
   id: /* @__PURE__ */ idSchema("car"),
-  name: /* @__PURE__ */ z3.string().min(1),
+  name: /* @__PURE__ */ z4.string().min(1),
   mcc_mnc: MccMnc,
-  ip_stack: IpStack
+  ip_stack: /* @__PURE__ */ IpStack.or(/* @__PURE__ */ z4.literal("unknown"))
 });
-var PortListeners = /* @__PURE__ */ z3.object({
-  host: /* @__PURE__ */ z3.string().min(1),
-  http_port: /* @__PURE__ */ z3.number().int().min(1).max(65535),
-  socks_port: /* @__PURE__ */ z3.number().int().min(1).max(65535)
+var PortListeners = /* @__PURE__ */ z4.object({
+  host: /* @__PURE__ */ z4.string().min(1),
+  http_port: /* @__PURE__ */ z4.number().int().min(1).max(65535),
+  socks_port: /* @__PURE__ */ z4.number().int().min(1).max(65535)
 });
-var PortCredentials = /* @__PURE__ */ z3.object({
-  username: /* @__PURE__ */ z3.string().min(1),
-  password: /* @__PURE__ */ z3.string().min(1),
+var PortCredentials = /* @__PURE__ */ z4.object({
+  username: /* @__PURE__ */ z4.string().min(1),
+  password: /* @__PURE__ */ z4.string().min(1),
   http: /* @__PURE__ */ ProxyCredentialDto.optional(),
   socks5: /* @__PURE__ */ ProxyCredentialDto.optional()
 });
-var PortRenewal = /* @__PURE__ */ z3.object({
-  auto_renew: /* @__PURE__ */ z3.boolean(),
+var PortRenewal = /* @__PURE__ */ z4.object({
+  auto_renew: /* @__PURE__ */ z4.boolean(),
   ends_at: IsoDateTime,
   price_cents: Cents,
-  can_renew: /* @__PURE__ */ z3.boolean()
+  can_renew: /* @__PURE__ */ z4.boolean()
 });
-var UsageToday = /* @__PURE__ */ z3.object({ bytes: /* @__PURE__ */ z3.number().int().min(0), cap_bytes: /* @__PURE__ */ z3.number().int().min(0) });
-var Port = /* @__PURE__ */ z3.object({
+var UsageToday = /* @__PURE__ */ z4.object({ bytes: /* @__PURE__ */ z4.number().int().min(0), cap_bytes: /* @__PURE__ */ z4.number().int().min(0) });
+var Port = /* @__PURE__ */ z4.object({
   id: /* @__PURE__ */ idSchema("prt"),
   state: PortState,
-  site_code: /* @__PURE__ */ z3.string().min(1),
+  site_code: /* @__PURE__ */ z4.string().min(1),
   country: CountryCode,
   carrier: PortCarrier,
   operator: Operator,
   listeners: PortListeners,
   credentials: /* @__PURE__ */ PortCredentials.nullable(),
-  allowlist: /* @__PURE__ */ z3.array(Cidr).max(MAX_ALLOWLIST_CIDRS),
-  egress_v4: /* @__PURE__ */ z3.string().nullable(),
-  egress_v6_prefix: /* @__PURE__ */ z3.string().nullable(),
-  v4_is_nat64: /* @__PURE__ */ z3.boolean(),
+  allowlist: /* @__PURE__ */ z4.array(Cidr).max(MAX_ALLOWLIST_CIDRS),
+  egress_v4: /* @__PURE__ */ z4.string().nullable(),
+  egress_v6_prefix: /* @__PURE__ */ z4.string().nullable(),
+  v4_is_nat64: /* @__PURE__ */ z4.boolean(),
   ip_since: /* @__PURE__ */ IsoDateTime.nullable(),
-  rotation_interval_s: /* @__PURE__ */ z3.number().int().min(0),
+  rotation_interval_s: /* @__PURE__ */ z4.number().int().min(0),
   sticky_until: /* @__PURE__ */ IsoDateTime.nullable(),
   cooldown_until: /* @__PURE__ */ IsoDateTime.nullable(),
   last_rotation_at: /* @__PURE__ */ IsoDateTime.nullable(),
   telemetry_since: /* @__PURE__ */ IsoDateTime.nullable(),
   usage_today: UsageToday,
-  uptime_30d_pct: /* @__PURE__ */ z3.number().min(0).max(100).nullable(),
+  uptime_30d_pct: /* @__PURE__ */ z4.number().min(0).max(100).nullable(),
   subscription: /* @__PURE__ */ Subscription.nullable(),
   evidence: Evidence,
   attestation: Evidence,
   network: /* @__PURE__ */ PortNetwork.optional(),
+  modem_features: /* @__PURE__ */ ModemDeviceFeatures.nullable().optional(),
   capabilities: /* @__PURE__ */ PortCapabilitiesDto.nullable().optional(),
   renewal: /* @__PURE__ */ PortRenewal.nullable().optional(),
-  rotation_url: /* @__PURE__ */ z3.string().url().nullable().optional()
+  rotation_url: /* @__PURE__ */ z4.string().url().nullable().optional()
 });
-var RotatePendingResponse = /* @__PURE__ */ z3.object({ rotation_id: /* @__PURE__ */ idSchema("rot"), status: /* @__PURE__ */ z3.literal("pending") });
-var RotationScheduleRequest = /* @__PURE__ */ z3.object({
-  interval_s: /* @__PURE__ */ z3.number().int().refine((v) => v === 0 || v >= ROTATION_INTERVAL_MIN_S && v <= ROTATION_INTERVAL_MAX_S, {
+var RotatePendingResponse = /* @__PURE__ */ z4.object({ rotation_id: /* @__PURE__ */ idSchema("rot"), status: /* @__PURE__ */ z4.literal("pending") });
+var RotationScheduleRequest = /* @__PURE__ */ z4.object({
+  interval_s: /* @__PURE__ */ z4.number().int().refine((v) => v === 0 || v >= ROTATION_INTERVAL_MIN_S && v <= ROTATION_INTERVAL_MAX_S, {
     message: `interval_s must be 0 (sticky) or ${ROTATION_INTERVAL_MIN_S}..${ROTATION_INTERVAL_MAX_S}`
   })
 });
 
-import { z as z4 } from "zod";
-var Pct = /* @__PURE__ */ z4.number().min(0).max(100);
-var PassportCarrier = /* @__PURE__ */ z4.object({
-  name: /* @__PURE__ */ z4.string().min(1),
+import { z as z5 } from "zod";
+var Pct = /* @__PURE__ */ z5.number().min(0).max(100);
+var PassportCarrier = /* @__PURE__ */ z5.object({
+  name: /* @__PURE__ */ z5.string().min(1),
   mcc_mnc: MccMnc,
-  asn: /* @__PURE__ */ z4.string().nullable(),
-  gateway_region: /* @__PURE__ */ z4.string().nullable(),
-  ip_stack: IpStack
+  asn: /* @__PURE__ */ z5.string().nullable(),
+  gateway_region: /* @__PURE__ */ z5.string().nullable(),
+  ip_stack: /* @__PURE__ */ IpStack.or(/* @__PURE__ */ z5.literal("unknown"))
 });
-var PassportEgress = /* @__PURE__ */ z4.object({
-  v4: /* @__PURE__ */ z4.string().nullable(),
-  v6_prefix: /* @__PURE__ */ z4.string().nullable(),
-  v4_is_nat64: /* @__PURE__ */ z4.boolean(),
+var PassportEgress = /* @__PURE__ */ z5.object({
+  v4: /* @__PURE__ */ z5.string().nullable(),
+  v6_prefix: /* @__PURE__ */ z5.string().nullable(),
+  v4_is_nat64: /* @__PURE__ */ z5.boolean(),
   ip_since: IsoDateTime
 });
-var GeoSource = /* @__PURE__ */ z4.object({
-  provider: /* @__PURE__ */ z4.string().min(1),
-  country: /* @__PURE__ */ z4.string().nullable(),
-  region: /* @__PURE__ */ z4.string().nullable(),
-  city: /* @__PURE__ */ z4.string().nullable()
+var GeoSource = /* @__PURE__ */ z5.object({
+  provider: /* @__PURE__ */ z5.string().min(1),
+  country: /* @__PURE__ */ z5.string().nullable(),
+  region: /* @__PURE__ */ z5.string().nullable(),
+  city: /* @__PURE__ */ z5.string().nullable()
 });
-var PassportGeo = /* @__PURE__ */ z4.object({
-  country: /* @__PURE__ */ z4.string().nullable(),
-  region: /* @__PURE__ */ z4.string().nullable(),
-  city: /* @__PURE__ */ z4.string().nullable(),
-  sources: /* @__PURE__ */ z4.array(GeoSource)
+var PassportGeo = /* @__PURE__ */ z5.object({
+  country: /* @__PURE__ */ z5.string().nullable(),
+  region: /* @__PURE__ */ z5.string().nullable(),
+  city: /* @__PURE__ */ z5.string().nullable(),
+  sources: /* @__PURE__ */ z5.array(GeoSource)
 });
-var PassportReputation = /* @__PURE__ */ z4.object({
-  flagged: /* @__PURE__ */ z4.boolean(),
-  hosting: /* @__PURE__ */ z4.boolean(),
-  providers: /* @__PURE__ */ z4.array(/* @__PURE__ */ z4.string()),
+var PassportReputation = /* @__PURE__ */ z5.object({
+  flagged: /* @__PURE__ */ z5.boolean(),
+  hosting: /* @__PURE__ */ z5.boolean(),
+  providers: /* @__PURE__ */ z5.array(/* @__PURE__ */ z5.string()),
   scored_at: /* @__PURE__ */ IsoDateTime.nullable()
 });
-var PassportRotation = /* @__PURE__ */ z4.object({
-  interval_s: /* @__PURE__ */ z4.number().int().min(0),
+var PassportRotation = /* @__PURE__ */ z5.object({
+  interval_s: /* @__PURE__ */ z5.number().int().min(0),
   sticky_until: /* @__PURE__ */ IsoDateTime.nullable(),
   last_rotation_at: /* @__PURE__ */ IsoDateTime.nullable(),
-  last_30d: /* @__PURE__ */ z4.object({
-    count: /* @__PURE__ */ z4.number().int().min(0),
+  last_30d: /* @__PURE__ */ z5.object({
+    count: /* @__PURE__ */ z5.number().int().min(0),
     first_attempt_success_pct: /* @__PURE__ */ Pct.nullable(),
-    p50_ms: /* @__PURE__ */ z4.number().min(0).nullable()
+    p50_ms: /* @__PURE__ */ z5.number().min(0).nullable()
   })
 });
-var Passport = /* @__PURE__ */ z4.object({
+var Passport = /* @__PURE__ */ z5.object({
   port_id: /* @__PURE__ */ idSchema("prt"),
   generated_at: IsoDateTime,
-  site_code: /* @__PURE__ */ z4.string().min(1),
+  site_code: /* @__PURE__ */ z5.string().min(1),
   country: CountryCode,
   operator: Operator,
-  evidence: /* @__PURE__ */ z4.enum(["signed", "observed"]).optional(),
+  evidence: /* @__PURE__ */ z5.enum(["signed", "observed"]).optional(),
   network: /* @__PURE__ */ PortNetwork.optional(),
   carrier: PassportCarrier,
   sim_contract_class: ContractType,
@@ -288,131 +318,163 @@ var Passport = /* @__PURE__ */ z4.object({
   geo: PassportGeo,
   reputation: PassportReputation,
   rotation: PassportRotation,
-  uptime: /* @__PURE__ */ z4.object({
+  uptime: /* @__PURE__ */ z5.object({
     d30_pct: /* @__PURE__ */ Pct.nullable(),
     d90_pct: /* @__PURE__ */ Pct.nullable(),
-    probes_30d: /* @__PURE__ */ z4.number().int().min(0)
+    probes_30d: /* @__PURE__ */ z5.number().int().min(0)
   }),
-  throughput: /* @__PURE__ */ z4.object({
-    last_sample_mbps: /* @__PURE__ */ z4.number().min(0).nullable(),
-    p50_7d_mbps: /* @__PURE__ */ z4.number().min(0).nullable()
+  throughput: /* @__PURE__ */ z5.object({
+    last_sample_mbps: /* @__PURE__ */ z5.number().min(0).nullable(),
+    p50_7d_mbps: /* @__PURE__ */ z5.number().min(0).nullable()
   }),
-  usage: /* @__PURE__ */ z4.object({ bytes_today: /* @__PURE__ */ z4.number().int().min(0), cap_bytes: /* @__PURE__ */ z4.number().int().min(0) }),
-  sessions: /* @__PURE__ */ z4.object({ concurrent_now: /* @__PURE__ */ z4.number().int().min(0), peak_24h: /* @__PURE__ */ z4.number().int().min(0) }),
-  ip_shared_with_own_ports: /* @__PURE__ */ z4.number().int().min(0),
-  exclusivity: /* @__PURE__ */ z4.literal(EXCLUSIVITY),
-  receipts_url: /* @__PURE__ */ z4.string().url()
+  usage: /* @__PURE__ */ z5.object({ bytes_today: /* @__PURE__ */ z5.number().int().min(0), cap_bytes: /* @__PURE__ */ z5.number().int().min(0) }),
+  sessions: /* @__PURE__ */ z5.object({ concurrent_now: /* @__PURE__ */ z5.number().int().min(0), peak_24h: /* @__PURE__ */ z5.number().int().min(0) }),
+  ip_shared_with_own_ports: /* @__PURE__ */ z5.number().int().min(0),
+  exclusivity: /* @__PURE__ */ z5.literal(EXCLUSIVITY),
+  receipts_url: /* @__PURE__ */ z5.string().url()
 });
 
-import { z as z5 } from "zod";
-var ReceiptGeo = /* @__PURE__ */ z5.object({
-  country: /* @__PURE__ */ z5.string().nullable(),
-  region: /* @__PURE__ */ z5.string().nullable(),
-  sources: /* @__PURE__ */ z5.number().int().min(0)
+import { z as z6 } from "zod";
+var ReceiptGeo = /* @__PURE__ */ z6.object({
+  country: /* @__PURE__ */ z6.string().nullable(),
+  region: /* @__PURE__ */ z6.string().nullable(),
+  sources: /* @__PURE__ */ z6.number().int().min(0)
 });
-var ReceiptReputation = /* @__PURE__ */ z5.object({
-  flagged: /* @__PURE__ */ z5.boolean(),
-  hosting: /* @__PURE__ */ z5.boolean(),
+var ReceiptReputation = /* @__PURE__ */ z6.object({
+  flagged: /* @__PURE__ */ z6.boolean(),
+  hosting: /* @__PURE__ */ z6.boolean(),
   scored_at: /* @__PURE__ */ IsoDateTime.nullable()
 });
-var ReceiptUnsigned = /* @__PURE__ */ z5.object({
+var ReceiptUnsigned = /* @__PURE__ */ z6.object({
   id: /* @__PURE__ */ idSchema("rot"),
   port_id: /* @__PURE__ */ idSchema("prt"),
-  site_code: /* @__PURE__ */ z5.string().min(1),
+  site_code: /* @__PURE__ */ z6.string().min(1),
   requested_by: RequestedBy,
-  old_ip4: /* @__PURE__ */ z5.string().nullable(),
-  new_ip4: /* @__PURE__ */ z5.string().nullable(),
-  old_ip6_prefix: /* @__PURE__ */ z5.string().nullable(),
-  new_ip6_prefix: /* @__PURE__ */ z5.string().nullable(),
-  v4_is_nat64: /* @__PURE__ */ z5.boolean(),
-  rotated: /* @__PURE__ */ z5.boolean(),
-  attempts: /* @__PURE__ */ z5.number().int().min(0),
-  elapsed_ms: /* @__PURE__ */ z5.number().int().min(0),
+  old_ip4: /* @__PURE__ */ z6.string().nullable(),
+  new_ip4: /* @__PURE__ */ z6.string().nullable(),
+  old_ip6_prefix: /* @__PURE__ */ z6.string().nullable(),
+  new_ip6_prefix: /* @__PURE__ */ z6.string().nullable(),
+  v4_is_nat64: /* @__PURE__ */ z6.boolean(),
+  rotated: /* @__PURE__ */ z6.boolean(),
+  attempts: /* @__PURE__ */ z6.number().int().min(0),
+  elapsed_ms: /* @__PURE__ */ z6.number().int().min(0),
   reason: RotationReason,
-  driver: /* @__PURE__ */ z5.string().min(1),
-  carrier: /* @__PURE__ */ z5.string().min(1),
+  driver: /* @__PURE__ */ z6.string().min(1),
+  carrier: /* @__PURE__ */ z6.string().min(1),
   mcc_mnc: MccMnc,
-  asn: /* @__PURE__ */ z5.string().nullable(),
+  asn: /* @__PURE__ */ z6.string().nullable(),
   geo: ReceiptGeo,
   reputation: /* @__PURE__ */ ReceiptReputation.nullable(),
-  sticky_window_s: /* @__PURE__ */ z5.number().int().min(0),
-  ip_shared_with_own_ports: /* @__PURE__ */ z5.number().int().min(0),
+  sticky_window_s: /* @__PURE__ */ z6.number().int().min(0),
+  ip_shared_with_own_ports: /* @__PURE__ */ z6.number().int().min(0),
   sim_contract_class: ContractType,
   signed_at: IsoDateTime,
-  key_id: /* @__PURE__ */ z5.string().regex(/^[a-z0-9-]+-\d{4}$/, "<site_code>-<yyyy>"),
-  attestation: /* @__PURE__ */ z5.enum(["signed", "observed"]).optional()
+  key_id: /* @__PURE__ */ z6.string().regex(/^[a-z0-9-]+-\d{4}$/, "<site_code>-<yyyy>"),
+  attestation: /* @__PURE__ */ z6.enum(["signed", "observed"]).optional()
 });
 var Receipt = /* @__PURE__ */ ReceiptUnsigned.extend({
-  sig: /* @__PURE__ */ z5.string().regex(/^[A-Za-z0-9+/]+={0,2}$/, "base64").min(86)
+  sig: /* @__PURE__ */ z6.string().regex(/^[A-Za-z0-9+/]+={0,2}$/, "base64").min(86)
 });
 
-import { z as z9 } from "zod";
+import { z as z11 } from "zod";
+
+import { z as z10 } from "zod";
 
 import { z as z8 } from "zod";
 
-import { z as z6 } from "zod";
-var ProductKind = /* @__PURE__ */ z6.enum(PRODUCT_KINDS);
-var ProductTerm = /* @__PURE__ */ z6.enum(PRODUCT_TERMS);
-var CustomerSupplyKind = /* @__PURE__ */ z6.enum(CUSTOMER_SUPPLY_KINDS);
-var SupplyHealth = /* @__PURE__ */ z6.enum(["ok", "degraded", "down", "unknown"]);
-var OrderStatus = /* @__PURE__ */ z6.enum(ORDER_STATUSES);
-var OrderItemStatus = /* @__PURE__ */ z6.enum(["pending", "provisioning", "fulfilled", "failed", "refunded", "held"]);
-var PaymentMethod = /* @__PURE__ */ z6.enum(PAYMENT_METHODS);
-var PriceTier = /* @__PURE__ */ z6.object({ min_qty: /* @__PURE__ */ z6.number().int().min(1).max(1e5), unit_cents: Cents });
-var SkuSnapshot = /* @__PURE__ */ z6.object({
+import { z as z7 } from "zod";
+var DigitalKind = /* @__PURE__ */ z7.enum(["esim_plan", "sms_activation", "sms_rental", "sms_dedicated"]);
+var DigitalDetails = /* @__PURE__ */ z7.object({
+  kind: DigitalKind,
+  countries: /* @__PURE__ */ z7.array(CountryCode).default([]),
+  region: /* @__PURE__ */ z7.string().nullable().optional(),
+  data_limit_gb: /* @__PURE__ */ z7.number().nonnegative().nullable().optional(),
+  data_unlimited: /* @__PURE__ */ z7.boolean().optional(),
+  validity_days: /* @__PURE__ */ z7.number().int().positive().nullable().optional(),
+  activation_policy: /* @__PURE__ */ z7.string().nullable().optional(),
+  network_type: /* @__PURE__ */ z7.string().nullable().optional(),
+  speed: /* @__PURE__ */ z7.string().nullable().optional(),
+  speed_note: /* @__PURE__ */ z7.string().nullable().optional(),
+  routing_location: /* @__PURE__ */ z7.string().nullable().optional(),
+  has_5g: /* @__PURE__ */ z7.boolean().optional(),
+  has_hotspot: /* @__PURE__ */ z7.boolean().optional(),
+  has_calls: /* @__PURE__ */ z7.boolean().optional(),
+  has_sms: /* @__PURE__ */ z7.boolean().optional(),
+  supports_topup: /* @__PURE__ */ z7.boolean().optional(),
+  call_minutes: /* @__PURE__ */ z7.number().int().nonnegative().nullable().optional(),
+  phone_number_prefix: /* @__PURE__ */ z7.string().nullable().optional(),
+  calls_unlimited: /* @__PURE__ */ z7.boolean().optional(),
+  voice_note: /* @__PURE__ */ z7.string().nullable().optional(),
+  service_name: /* @__PURE__ */ z7.string().nullable().optional(),
+  duration_days: /* @__PURE__ */ z7.number().int().positive().nullable().optional(),
+  billing_period: /* @__PURE__ */ z7.literal("monthly").nullable().optional()
+});
+
+var ProductKind = /* @__PURE__ */ z8.enum(PRODUCT_KINDS);
+var ProductTerm = /* @__PURE__ */ z8.enum(PRODUCT_TERMS);
+var CustomerSupplyKind = /* @__PURE__ */ z8.enum(CUSTOMER_SUPPLY_KINDS);
+var SupplyHealth = /* @__PURE__ */ z8.enum(["ok", "degraded", "down", "unknown"]);
+var OrderStatus = /* @__PURE__ */ z8.enum(ORDER_STATUSES);
+var OrderItemStatus = /* @__PURE__ */ z8.enum(["pending", "provisioning", "fulfilled", "failed", "refunded", "held"]);
+var PaymentMethod = /* @__PURE__ */ z8.enum(PAYMENT_METHODS);
+var PriceTier = /* @__PURE__ */ z8.object({ min_qty: /* @__PURE__ */ z8.number().int().min(1).max(1e5), unit_cents: Cents });
+var SkuSnapshot = /* @__PURE__ */ z8.object({
   sku: ProductSku,
   kind: ProductKind,
-  title: /* @__PURE__ */ z6.string().min(1),
+  title: /* @__PURE__ */ z8.string().min(1),
   country: /* @__PURE__ */ CountryCode.nullable(),
-  carrier_hint: /* @__PURE__ */ z6.string().nullable(),
+  carrier_hint: /* @__PURE__ */ z8.string().nullable(),
   term: ProductTerm,
   sell_cents: Cents,
   currency: Currency,
   evidence: Evidence,
-  operator_label: /* @__PURE__ */ z6.string().min(1),
-  supply_kind: CustomerSupplyKind
+  operator_label: /* @__PURE__ */ z8.string().min(1),
+  supply_kind: CustomerSupplyKind,
+  gb_per_unit: /* @__PURE__ */ z8.number().finite().positive().optional(),
+  digital_details: /* @__PURE__ */ DigitalDetails.nullable().optional(),
+  modem_features: /* @__PURE__ */ ModemStockFeatures.nullable().optional()
 });
 
-import { z as z7 } from "zod";
+import { z as z9 } from "zod";
 
 var ORDER_NUMBER_RE = /^PP-\d{4}-\d{6,}$/;
 
-var OrderNumber = /* @__PURE__ */ z7.string().regex(ORDER_NUMBER_RE, "PP-YYYY-NNNNNN");
+var OrderNumber = /* @__PURE__ */ z9.string().regex(ORDER_NUMBER_RE, "PP-YYYY-NNNNNN");
 var ANALYTICS_REF_RE = /^[0-9a-f]{20}$/;
-var FulfilmentCredentials = /* @__PURE__ */ z7.object({
-  host: /* @__PURE__ */ z7.string().min(1),
-  http_port: /* @__PURE__ */ z7.number().int().positive().nullable(),
-  socks_port: /* @__PURE__ */ z7.number().int().positive().nullable(),
-  username: /* @__PURE__ */ z7.string().min(1),
-  password: /* @__PURE__ */ z7.string().min(1),
+var FulfilmentCredentials = /* @__PURE__ */ z9.object({
+  host: /* @__PURE__ */ z9.string().min(1),
+  http_port: /* @__PURE__ */ z9.number().int().positive().nullable(),
+  socks_port: /* @__PURE__ */ z9.number().int().positive().nullable(),
+  username: /* @__PURE__ */ z9.string().min(1),
+  password: /* @__PURE__ */ z9.string().min(1),
   expires_at: /* @__PURE__ */ IsoDateTime.nullable(),
   http: /* @__PURE__ */ ProxyCredentialDto.optional(),
   socks5: /* @__PURE__ */ ProxyCredentialDto.optional()
 });
-var OrderItemUnit = /* @__PURE__ */ z7.object({
-  unit: /* @__PURE__ */ z7.number().int().min(1),
+var OrderItemUnit = /* @__PURE__ */ z9.object({
+  unit: /* @__PURE__ */ z9.number().int().min(1),
   port_id: /* @__PURE__ */ idSchema("prt"),
-  resource_url: /* @__PURE__ */ z7.string().nullable(),
+  resource_url: /* @__PURE__ */ z9.string().nullable(),
   credentials: /* @__PURE__ */ FulfilmentCredentials.nullable()
 });
-var OrderItem = /* @__PURE__ */ z7.object({
+var OrderItem = /* @__PURE__ */ z9.object({
   id: /* @__PURE__ */ idSchema("oi"),
   product_id: /* @__PURE__ */ idSchema("prod"),
   sku_snapshot: SkuSnapshot,
-  quantity: /* @__PURE__ */ z7.number().int().min(1),
+  quantity: /* @__PURE__ */ z9.number().int().min(1),
   unit_cents: Cents,
   total_cents: Cents,
   status: OrderItemStatus,
-  fulfilment_ref: /* @__PURE__ */ z7.string().nullable(),
-  attempts: /* @__PURE__ */ z7.number().int().min(0),
-  last_error: /* @__PURE__ */ z7.string().nullable().optional(),
-  customer_reason: /* @__PURE__ */ z7.string().nullable().optional(),
-  resource_url: /* @__PURE__ */ z7.string().nullable(),
+  fulfilment_ref: /* @__PURE__ */ z9.string().nullable(),
+  attempts: /* @__PURE__ */ z9.number().int().min(0),
+  last_error: /* @__PURE__ */ z9.string().nullable().optional(),
+  customer_reason: /* @__PURE__ */ z9.string().nullable().optional(),
+  resource_url: /* @__PURE__ */ z9.string().nullable(),
   credentials: /* @__PURE__ */ FulfilmentCredentials.nullable(),
-  units: /* @__PURE__ */ z7.array(OrderItemUnit).optional(),
+  units: /* @__PURE__ */ z9.array(OrderItemUnit).optional(),
   updated_at: IsoDateTime
 });
-var Order = /* @__PURE__ */ z7.object({
+var Order = /* @__PURE__ */ z9.object({
   id: /* @__PURE__ */ idSchema("ord"),
   number: OrderNumber,
   customer_id: /* @__PURE__ */ idSchema("cus"),
@@ -420,99 +482,110 @@ var Order = /* @__PURE__ */ z7.object({
   status: OrderStatus,
   subtotal_cents: Cents,
   discount_cents: Cents,
-  vat_rate_bps: /* @__PURE__ */ z7.number().int().min(0).max(1e4),
+  vat_rate_bps: /* @__PURE__ */ z9.number().int().min(0).max(1e4),
   vat_cents: Cents,
   total_cents: Cents,
   currency: Currency,
   payment_method: PaymentMethod,
-  coupon_code: /* @__PURE__ */ z7.string().nullable(),
-  items: /* @__PURE__ */ z7.array(OrderItem),
+  coupon_code: /* @__PURE__ */ z9.string().nullable(),
+  items: /* @__PURE__ */ z9.array(OrderItem),
   paid_at: /* @__PURE__ */ IsoDateTime.nullable(),
-  notes: /* @__PURE__ */ z7.string().nullable(),
-  invoice_url: /* @__PURE__ */ z7.string().nullable(),
-  payment_url: /* @__PURE__ */ z7.string().url().nullable().optional(),
-  analytics_ref: /* @__PURE__ */ z7.string().regex(ANALYTICS_REF_RE).nullable().optional(),
+  notes: /* @__PURE__ */ z9.string().nullable(),
+  invoice_url: /* @__PURE__ */ z9.string().nullable(),
+  payment_url: /* @__PURE__ */ z9.string().url().nullable().optional(),
+  analytics_ref: /* @__PURE__ */ z9.string().regex(ANALYTICS_REF_RE).nullable().optional(),
   created_at: IsoDateTime,
   updated_at: IsoDateTime
 });
 
-var TrafficProtocolName = /* @__PURE__ */ z8.enum(TRAFFIC_PROTOCOLS);
-var TrafficCredentials = /* @__PURE__ */ z8.object({
-  host: /* @__PURE__ */ z8.string().min(1),
-  http_port: /* @__PURE__ */ z8.number().int().positive(),
-  socks_port: /* @__PURE__ */ z8.number().int().positive(),
-  username_base: /* @__PURE__ */ z8.string().min(1),
-  password: /* @__PURE__ */ z8.string().min(1)
+var TrafficProtocolName = /* @__PURE__ */ z10.enum(TRAFFIC_PROTOCOLS);
+var TrafficCredentials = /* @__PURE__ */ z10.object({
+  host: /* @__PURE__ */ z10.string().min(1),
+  http_port: /* @__PURE__ */ z10.number().int().positive(),
+  socks_port: /* @__PURE__ */ z10.number().int().positive(),
+  username_base: /* @__PURE__ */ z10.string().min(1),
+  password: /* @__PURE__ */ z10.string().min(1)
 });
-var TrafficStatus = /* @__PURE__ */ z8.enum(["none", "active", "exhausted", "expired", "suspended"]);
-var TrafficLimits = /* @__PURE__ */ z8.object({
-  validity_days: /* @__PURE__ */ z8.number().int().min(0),
-  kyb_tier: /* @__PURE__ */ z8.string(),
-  t0_monthly_gb_cap: /* @__PURE__ */ z8.number().min(0),
-  gb_bought_30d: /* @__PURE__ */ z8.number().min(0),
-  gb_remaining_30d: /* @__PURE__ */ z8.number().min(0).nullable(),
-  trial_available: /* @__PURE__ */ z8.boolean(),
-  max_order_gb: /* @__PURE__ */ z8.number().int().min(1)
+var TrafficStatus = /* @__PURE__ */ z10.enum(["none", "active", "exhausted", "expired", "suspended"]);
+var TrafficLimits = /* @__PURE__ */ z10.object({
+  validity_days: /* @__PURE__ */ z10.number().int().min(0),
+  kyb_tier: /* @__PURE__ */ z10.string(),
+  t0_monthly_gb_cap: /* @__PURE__ */ z10.number().min(0),
+  gb_bought_30d: /* @__PURE__ */ z10.number().min(0),
+  gb_remaining_30d: /* @__PURE__ */ z10.number().min(0).nullable(),
+  trial_available: /* @__PURE__ */ z10.boolean(),
+  max_order_gb: /* @__PURE__ */ z10.number().int().min(1)
 });
-var TrafficInfo = /* @__PURE__ */ z8.object({
+var TrafficInfo = /* @__PURE__ */ z10.object({
   id: /* @__PURE__ */ idSchema("pool").nullable(),
   status: TrafficStatus,
-  gb_total: /* @__PURE__ */ z8.number().min(0),
-  gb_used: /* @__PURE__ */ z8.number().min(0),
-  gb_left: /* @__PURE__ */ z8.number().min(0),
+  gb_total: /* @__PURE__ */ z10.number().min(0),
+  gb_used: /* @__PURE__ */ z10.number().min(0),
+  gb_left: /* @__PURE__ */ z10.number().min(0),
   expires_at: /* @__PURE__ */ IsoDateTime.nullable(),
-  enabled: /* @__PURE__ */ z8.boolean(),
+  enabled: /* @__PURE__ */ z10.boolean(),
   last_synced_at: /* @__PURE__ */ IsoDateTime.nullable(),
   credentials: /* @__PURE__ */ TrafficCredentials.nullable(),
-  usage_daily: /* @__PURE__ */ z8.array(/* @__PURE__ */ z8.object({ date: /* @__PURE__ */ z8.string().regex(/^\d{4}-\d{2}-\d{2}$/), gb: /* @__PURE__ */ z8.number().min(0) })),
+  credential_state: /* @__PURE__ */ z10.enum(["confirmed", "uncertain", "observed"]).optional(),
+  credential_observed_at: /* @__PURE__ */ IsoDateTime.nullable().optional(),
+  operation: /* @__PURE__ */ z10.object({ id: /* @__PURE__ */ z10.string(), action: /* @__PURE__ */ z10.string(), state: /* @__PURE__ */ z10.string(), submitted_at: /* @__PURE__ */ IsoDateTime.nullable(), observed_at: /* @__PURE__ */ IsoDateTime.nullable(), error_code: /* @__PURE__ */ z10.string().nullable() }).nullable().optional(),
+  meter: /* @__PURE__ */ z10.object({ used_mb: /* @__PURE__ */ z10.number().finite().nonnegative().nullable(), cap_gb: /* @__PURE__ */ z10.number().finite().nonnegative().nullable(), observed_at: /* @__PURE__ */ IsoDateTime.nullable(), attempted_at: /* @__PURE__ */ IsoDateTime.nullable(), stale: /* @__PURE__ */ z10.boolean(), error_code: /* @__PURE__ */ z10.string().nullable(), source: /* @__PURE__ */ z10.literal("provider_raw_pak") }).optional(),
+  availability: /* @__PURE__ */ z10.object({ can_connect: /* @__PURE__ */ z10.boolean(), status: /* @__PURE__ */ z10.enum(["available", "unavailable", "unknown"]), reason: /* @__PURE__ */ z10.string().nullable(), provider_enabled: /* @__PURE__ */ z10.boolean().nullable() }).optional(),
+  history: /* @__PURE__ */ z10.object({ timezone: /* @__PURE__ */ z10.literal("UTC"), source: /* @__PURE__ */ z10.literal("local_snapshots"), coverage: /* @__PURE__ */ z10.enum(["partial", "unknown"]), observed_days: /* @__PURE__ */ z10.number().int().nonnegative(), missing_days: /* @__PURE__ */ z10.number().int().nonnegative(), generated_at: IsoDateTime }).optional(),
+  usage_daily: /* @__PURE__ */ z10.array(/* @__PURE__ */ z10.object({ date: /* @__PURE__ */ z10.string().regex(/^\d{4}-\d{2}-\d{2}$/), gb: /* @__PURE__ */ z10.number().min(0) })),
   limits: TrafficLimits
 });
-var TrafficCountryRow = /* @__PURE__ */ z8.object({
-  country: /* @__PURE__ */ z8.string().length(2),
-  name: /* @__PURE__ */ z8.string().min(1),
-  online: /* @__PURE__ */ z8.number().int().min(0)
+var TrafficCountryRow = /* @__PURE__ */ z10.object({
+  country: /* @__PURE__ */ z10.string().length(2),
+  name: /* @__PURE__ */ z10.string().min(1),
+  online: /* @__PURE__ */ z10.number().int().min(0)
 });
-var TrafficCountries = /* @__PURE__ */ z8.object({
-  mobile: /* @__PURE__ */ z8.array(TrafficCountryRow),
-  residential: /* @__PURE__ */ z8.array(TrafficCountryRow),
-  totals: /* @__PURE__ */ z8.object({ mobile_online: /* @__PURE__ */ z8.number().int().min(0), residential_online: /* @__PURE__ */ z8.number().int().min(0), countries: /* @__PURE__ */ z8.number().int().min(0) }),
+var TrafficCountries = /* @__PURE__ */ z10.object({
+  mobile: /* @__PURE__ */ z10.array(TrafficCountryRow),
+  residential: /* @__PURE__ */ z10.array(TrafficCountryRow),
+  totals: /* @__PURE__ */ z10.object({ mobile_online: /* @__PURE__ */ z10.number().int().min(0), residential_online: /* @__PURE__ */ z10.number().int().min(0), countries: /* @__PURE__ */ z10.number().int().min(0) }),
   generated_at: IsoDateTime,
-  stale: /* @__PURE__ */ z8.boolean()
+  stale: /* @__PURE__ */ z10.boolean(),
+  observed_at: /* @__PURE__ */ IsoDateTime.nullable().optional(),
+  timestamp_basis: /* @__PURE__ */ z10.enum(["provider", "observed", "unknown"]).optional(),
+  status: /* @__PURE__ */ z10.enum(["observed", "stale", "unavailable"]).optional(),
+  refresh_after_seconds: /* @__PURE__ */ z10.number().int().positive().optional()
 });
-var BuildUrlResult = /* @__PURE__ */ z8.object({
-  host: /* @__PURE__ */ z8.string().min(1),
-  port: /* @__PURE__ */ z8.number().int().positive(),
+var BuildUrlResult = /* @__PURE__ */ z10.object({
+  host: /* @__PURE__ */ z10.string().min(1),
+  port: /* @__PURE__ */ z10.number().int().positive(),
   protocol: TrafficProtocolName,
-  username: /* @__PURE__ */ z8.string().min(1),
-  session: /* @__PURE__ */ z8.string().nullable(),
-  url: /* @__PURE__ */ z8.string().min(1),
-  url_masked: /* @__PURE__ */ z8.string().min(1),
-  snippets: /* @__PURE__ */ z8.object({ curl: /* @__PURE__ */ z8.string(), python: /* @__PURE__ */ z8.string(), node: /* @__PURE__ */ z8.string(), playwright: /* @__PURE__ */ z8.string() })
+  username: /* @__PURE__ */ z10.string().min(1),
+  session: /* @__PURE__ */ z10.string().nullable(),
+  url: /* @__PURE__ */ z10.string().min(1),
+  url_masked: /* @__PURE__ */ z10.string().min(1),
+  snippets: /* @__PURE__ */ z10.object({ curl: /* @__PURE__ */ z10.string(), python: /* @__PURE__ */ z10.string(), node: /* @__PURE__ */ z10.string(), playwright: /* @__PURE__ */ z10.string() }),
+  stock: /* @__PURE__ */ z10.object({ status: /* @__PURE__ */ z10.enum(["observed_available", "unknown"]), observed_at: /* @__PURE__ */ IsoDateTime.nullable() }).optional()
 });
-var TrafficTestResult = /* @__PURE__ */ z8.object({
-  ok: /* @__PURE__ */ z8.boolean(),
-  exit_country: /* @__PURE__ */ z8.string().nullable(),
-  country_verified: /* @__PURE__ */ z8.boolean(),
-  exit_ip: /* @__PURE__ */ z8.string().nullable(),
-  latency_ms: /* @__PURE__ */ z8.number().int().min(0).nullable(),
-  error_code: /* @__PURE__ */ z8.string().optional(),
-  simulated: /* @__PURE__ */ z8.boolean().optional()
+var TrafficTestResult = /* @__PURE__ */ z10.object({
+  ok: /* @__PURE__ */ z10.boolean(),
+  exit_country: /* @__PURE__ */ z10.string().nullable(),
+  country_verified: /* @__PURE__ */ z10.boolean(),
+  exit_ip: /* @__PURE__ */ z10.string().nullable(),
+  latency_ms: /* @__PURE__ */ z10.number().int().min(0).nullable(),
+  error_code: /* @__PURE__ */ z10.string().optional(),
+  simulated: /* @__PURE__ */ z10.boolean().optional()
 });
-var TrafficBuyResponse = /* @__PURE__ */ z8.object({ order: Order, payment_id: /* @__PURE__ */ idSchema("pay") });
-var TrafficPricing = /* @__PURE__ */ z8.object({
-  sku: /* @__PURE__ */ z8.string().min(1),
-  currency: /* @__PURE__ */ z8.literal("EUR"),
-  tiers: /* @__PURE__ */ z8.array(PriceTier),
-  packages_gb: /* @__PURE__ */ z8.array(/* @__PURE__ */ z8.number().int().min(1)),
-  max_order_gb: /* @__PURE__ */ z8.number().int().min(1),
-  validity_days: /* @__PURE__ */ z8.number().int().min(0),
-  t0_monthly_gb_cap: /* @__PURE__ */ z8.number().min(0),
-  trial: /* @__PURE__ */ z8.object({ sku: /* @__PURE__ */ z8.string().min(1), gb: /* @__PURE__ */ z8.number().positive(), price_cents: Cents }).nullable(),
-  available: /* @__PURE__ */ z8.boolean()
+var TrafficBuyResponse = /* @__PURE__ */ z10.object({ order: Order, payment_id: /* @__PURE__ */ idSchema("pay") });
+var TrafficPricing = /* @__PURE__ */ z10.object({
+  sku: /* @__PURE__ */ z10.string().min(1),
+  currency: /* @__PURE__ */ z10.literal("EUR"),
+  tiers: /* @__PURE__ */ z10.array(PriceTier),
+  packages_gb: /* @__PURE__ */ z10.array(/* @__PURE__ */ z10.number().int().min(1)),
+  max_order_gb: /* @__PURE__ */ z10.number().int().min(1),
+  validity_days: /* @__PURE__ */ z10.number().int().min(0),
+  t0_monthly_gb_cap: /* @__PURE__ */ z10.number().min(0),
+  trial: /* @__PURE__ */ z10.object({ sku: /* @__PURE__ */ z10.string().min(1), gb: /* @__PURE__ */ z10.number().positive(), price_cents: Cents }).nullable(),
+  available: /* @__PURE__ */ z10.boolean()
 });
 
-var PricingSku = /* @__PURE__ */ z9.object({
-  sku: /* @__PURE__ */ z9.string().min(1),
+var PricingSku = /* @__PURE__ */ z11.object({
+  sku: /* @__PURE__ */ z11.string().min(1),
   country: CountryCode,
   operator: Operator,
   term: PricingTerm,
@@ -520,113 +593,113 @@ var PricingSku = /* @__PURE__ */ z9.object({
   currency: Currency,
   floor_cents: /* @__PURE__ */ Cents.optional(),
   evidence: Evidence,
-  buy_via: /* @__PURE__ */ z9.enum(["ports", "cart"]),
-  terms: /* @__PURE__ */ z9.object({ monthly: Cents, weekly: Cents, daily: Cents }).optional()
+  buy_via: /* @__PURE__ */ z11.enum(["ports", "cart"]),
+  terms: /* @__PURE__ */ z11.object({ monthly: Cents, weekly: Cents, daily: Cents }).optional()
 });
-var LadderRung = /* @__PURE__ */ z9.object({ min_ports: /* @__PURE__ */ z9.number().int().min(1), discount_pct: /* @__PURE__ */ z9.number().min(0).max(100) });
-var PricingResponse = /* @__PURE__ */ z9.object({
-  currency_note: /* @__PURE__ */ z9.string(),
+var LadderRung = /* @__PURE__ */ z11.object({ min_ports: /* @__PURE__ */ z11.number().int().min(1), discount_pct: /* @__PURE__ */ z11.number().min(0).max(100) });
+var PricingResponse = /* @__PURE__ */ z11.object({
+  currency_note: /* @__PURE__ */ z11.string(),
   updated_at: IsoDateTime,
-  skus: /* @__PURE__ */ z9.array(PricingSku),
-  ladder: /* @__PURE__ */ z9.array(LadderRung),
-  term_ratios: /* @__PURE__ */ z9.object({ weekly: /* @__PURE__ */ z9.number().min(0).max(1), daily: /* @__PURE__ */ z9.number().min(0).max(1) }),
-  trial: /* @__PURE__ */ z9.object({ price_cents: Cents, hours: /* @__PURE__ */ z9.number().int().min(1) }),
+  skus: /* @__PURE__ */ z11.array(PricingSku),
+  ladder: /* @__PURE__ */ z11.array(LadderRung),
+  term_ratios: /* @__PURE__ */ z11.object({ weekly: /* @__PURE__ */ z11.number().min(0).max(1), daily: /* @__PURE__ */ z11.number().min(0).max(1) }),
+  trial: /* @__PURE__ */ z11.object({ price_cents: Cents, hours: /* @__PURE__ */ z11.number().int().min(1) }),
   traffic: /* @__PURE__ */ TrafficPricing.nullable().optional()
 });
-var InventoryItem = /* @__PURE__ */ z9.object({
+var InventoryItem = /* @__PURE__ */ z11.object({
   country: CountryCode,
-  site_code: /* @__PURE__ */ z9.string().min(1),
+  site_code: /* @__PURE__ */ z11.string().min(1),
   operator: Operator,
-  carrier: /* @__PURE__ */ z9.string().min(1),
+  carrier: /* @__PURE__ */ z11.string().min(1),
   carrier_id: /* @__PURE__ */ idSchema("car"),
-  available: /* @__PURE__ */ z9.number().int().min(0),
-  telemetry_hours_min: /* @__PURE__ */ z9.number().int().min(0).default(TELEMETRY_HOURS_MIN),
-  waitlist: /* @__PURE__ */ z9.boolean()
+  available: /* @__PURE__ */ z11.number().int().min(0),
+  telemetry_hours_min: /* @__PURE__ */ z11.number().int().min(0).default(TELEMETRY_HOURS_MIN),
+  waitlist: /* @__PURE__ */ z11.boolean()
 });
-var InventoryResponse = /* @__PURE__ */ z9.object({ data: /* @__PURE__ */ z9.array(InventoryItem) });
-var QuoteResponse = /* @__PURE__ */ z9.object({
+var InventoryResponse = /* @__PURE__ */ z11.object({ data: /* @__PURE__ */ z11.array(InventoryItem) });
+var QuoteResponse = /* @__PURE__ */ z11.object({
   unit_cents: Cents,
-  discount_pct: /* @__PURE__ */ z9.number().min(0).max(100),
+  discount_pct: /* @__PURE__ */ z11.number().min(0).max(100),
   total_cents: Cents,
   currency: Currency
 });
 
-import { z as z10 } from "zod";
-var Pct2 = /* @__PURE__ */ z10.number().min(0).max(100);
-var Incident = /* @__PURE__ */ z10.object({
+import { z as z12 } from "zod";
+var Pct2 = /* @__PURE__ */ z12.number().min(0).max(100);
+var Incident = /* @__PURE__ */ z12.object({
   id: /* @__PURE__ */ idSchema("inc"),
   scope: IncidentScope,
-  scope_id: /* @__PURE__ */ z10.string().nullable(),
-  title: /* @__PURE__ */ z10.string().min(1),
-  cause: /* @__PURE__ */ z10.string().nullable(),
+  scope_id: /* @__PURE__ */ z12.string().nullable(),
+  title: /* @__PURE__ */ z12.string().min(1),
+  cause: /* @__PURE__ */ z12.string().nullable(),
   started_at: IsoDateTime,
   resolved_at: /* @__PURE__ */ IsoDateTime.nullable(),
-  sla_excluded: /* @__PURE__ */ z10.boolean(),
-  public: /* @__PURE__ */ z10.boolean()
+  sla_excluded: /* @__PURE__ */ z12.boolean(),
+  public: /* @__PURE__ */ z12.boolean()
 });
-var StatusSite = /* @__PURE__ */ z10.object({
-  code: /* @__PURE__ */ z10.string().min(1),
+var StatusSite = /* @__PURE__ */ z12.object({
+  code: /* @__PURE__ */ z12.string().min(1),
   country: CountryCode,
   operator: Operator,
   status: SiteStatus,
-  ports_live: /* @__PURE__ */ z10.number().int().min(0),
+  ports_live: /* @__PURE__ */ z12.number().int().min(0),
   uptime_30d_pct: /* @__PURE__ */ Pct2.nullable()
 });
-var StatusCarrier = /* @__PURE__ */ z10.object({
+var StatusCarrier = /* @__PURE__ */ z12.object({
   id: /* @__PURE__ */ idSchema("car"),
-  name: /* @__PURE__ */ z10.string().min(1),
+  name: /* @__PURE__ */ z12.string().min(1),
   country: CountryCode,
   uptime_30d_pct: /* @__PURE__ */ Pct2.nullable(),
   rotation_first_attempt_pct: /* @__PURE__ */ Pct2.nullable(),
-  rotation_p50_ms: /* @__PURE__ */ z10.number().min(0).nullable(),
+  rotation_p50_ms: /* @__PURE__ */ z12.number().min(0).nullable(),
   rotation_floor_pct: /* @__PURE__ */ Pct2.nullable()
 });
-var StatusResponse = /* @__PURE__ */ z10.object({
+var StatusResponse = /* @__PURE__ */ z12.object({
   updated_at: IsoDateTime,
   platform: PlatformStatus,
-  sites: /* @__PURE__ */ z10.array(StatusSite),
-  carriers: /* @__PURE__ */ z10.array(StatusCarrier),
-  incidents: /* @__PURE__ */ z10.array(Incident),
-  support: /* @__PURE__ */ z10.object({ median_first_response_min_30d: /* @__PURE__ */ z10.number().min(0).nullable() }),
-  traffic: /* @__PURE__ */ z10.object({
+  sites: /* @__PURE__ */ z12.array(StatusSite),
+  carriers: /* @__PURE__ */ z12.array(StatusCarrier),
+  incidents: /* @__PURE__ */ z12.array(Incident),
+  support: /* @__PURE__ */ z12.object({ median_first_response_min_30d: /* @__PURE__ */ z12.number().min(0).nullable() }),
+  traffic: /* @__PURE__ */ z12.object({
     health: /* @__PURE__ */ SupplyHealth.nullable(),
     last_sync_at: /* @__PURE__ */ IsoDateTime.nullable(),
     countries_generated_at: /* @__PURE__ */ IsoDateTime.nullable()
   })
 });
-var WellKnownKey = /* @__PURE__ */ z10.object({
-  key_id: /* @__PURE__ */ z10.string().min(1),
-  site_code: /* @__PURE__ */ z10.string().min(1),
-  alg: /* @__PURE__ */ z10.literal(RECEIPT_ALG),
-  public_key_b64: /* @__PURE__ */ z10.string().min(1),
+var WellKnownKey = /* @__PURE__ */ z12.object({
+  key_id: /* @__PURE__ */ z12.string().min(1),
+  site_code: /* @__PURE__ */ z12.string().min(1),
+  alg: /* @__PURE__ */ z12.literal(RECEIPT_ALG),
+  public_key_b64: /* @__PURE__ */ z12.string().min(1),
   valid_from: IsoDateTime,
   valid_to: IsoDateTime
 });
-var WellKnownKeys = /* @__PURE__ */ z10.object({ keys: /* @__PURE__ */ z10.array(WellKnownKey) });
+var WellKnownKeys = /* @__PURE__ */ z12.object({ keys: /* @__PURE__ */ z12.array(WellKnownKey) });
 
-import { z as z11 } from "zod";
-var UsageGranularity = /* @__PURE__ */ z11.enum(["minute", "hour", "day"]);
-var UsagePoint = /* @__PURE__ */ z11.object({
+import { z as z13 } from "zod";
+var UsageGranularity = /* @__PURE__ */ z13.enum(["minute", "hour", "day"]);
+var UsagePoint = /* @__PURE__ */ z13.object({
   ts: IsoDateTime,
-  bytes_in: /* @__PURE__ */ z11.number().int().min(0),
-  bytes_out: /* @__PURE__ */ z11.number().int().min(0),
-  sessions_peak: /* @__PURE__ */ z11.number().int().min(0),
-  conns_new: /* @__PURE__ */ z11.number().int().min(0),
-  rotations: /* @__PURE__ */ z11.number().int().min(0)
+  bytes_in: /* @__PURE__ */ z13.number().int().min(0),
+  bytes_out: /* @__PURE__ */ z13.number().int().min(0),
+  sessions_peak: /* @__PURE__ */ z13.number().int().min(0),
+  conns_new: /* @__PURE__ */ z13.number().int().min(0),
+  rotations: /* @__PURE__ */ z13.number().int().min(0)
 });
-var UsageResponse = /* @__PURE__ */ z11.object({ data: /* @__PURE__ */ z11.array(UsagePoint) });
+var UsageResponse = /* @__PURE__ */ z13.object({ data: /* @__PURE__ */ z13.array(UsagePoint) });
 
-import { z as z12 } from "zod";
-var ProblemDetails = /* @__PURE__ */ z12.object({
-  type: /* @__PURE__ */ z12.string().url().or(/* @__PURE__ */ z12.literal("about:blank")),
-  title: /* @__PURE__ */ z12.string(),
-  status: /* @__PURE__ */ z12.number().int().min(100).max(599),
-  detail: /* @__PURE__ */ z12.string().optional(),
-  instance: /* @__PURE__ */ z12.string().optional(),
-  code: /* @__PURE__ */ z12.string().min(1),
-  retry_after: /* @__PURE__ */ z12.number().int().min(0).optional(),
-  errors: /* @__PURE__ */ z12.array(/* @__PURE__ */ z12.object({ path: /* @__PURE__ */ z12.string(), message: /* @__PURE__ */ z12.string() })).optional(),
-  current_revision: /* @__PURE__ */ z12.number().int().min(1).optional()
+import { z as z14 } from "zod";
+var ProblemDetails = /* @__PURE__ */ z14.object({
+  type: /* @__PURE__ */ z14.string().url().or(/* @__PURE__ */ z14.literal("about:blank")),
+  title: /* @__PURE__ */ z14.string(),
+  status: /* @__PURE__ */ z14.number().int().min(100).max(599),
+  detail: /* @__PURE__ */ z14.string().optional(),
+  instance: /* @__PURE__ */ z14.string().optional(),
+  code: /* @__PURE__ */ z14.string().min(1),
+  retry_after: /* @__PURE__ */ z14.number().int().min(0).optional(),
+  errors: /* @__PURE__ */ z14.array(/* @__PURE__ */ z14.object({ path: /* @__PURE__ */ z14.string(), message: /* @__PURE__ */ z14.string() })).optional(),
+  current_revision: /* @__PURE__ */ z14.number().int().min(1).optional()
 });
 
 import { createPrivateKey, createPublicKey, generateKeyPairSync, sign, verify } from "node:crypto";
@@ -684,8 +757,19 @@ function verifyReceiptWithKeys(receipt, keys) {
   return { ok, key_id: key.key_id, reason: ok ? "ok" : "bad_signature" };
 }
 
+function trafficSnapshotGbPerUnit(snapshot) {
+  if (snapshot.gb_per_unit !== void 0) {
+    if (typeof snapshot.gb_per_unit !== "number" || !Number.isFinite(snapshot.gb_per_unit) || snapshot.gb_per_unit <= 0) {
+      throw new RangeError("The saved traffic quantity must be a positive finite number");
+    }
+    return snapshot.gb_per_unit;
+  }
+  const upstreamRef = snapshot.upstream_ref ?? snapshot.upstreamRef;
+  return snapshot.sku === "traffic-trial" || typeof upstreamRef === "string" && upstreamRef.endsWith(":trial") ? 0.5 : 1;
+}
+
 var SERVER_NAME = "portproof";
-var SERVER_VERSION = "0.2.1";
+var SERVER_VERSION = "0.2.2";
 var USER_AGENT = `portproof-mcp/${SERVER_VERSION}`;
 var DEFAULT_API_URL = "https://api.portproof.org";
 var DEFAULT_TIMEOUT_MS = 3e4;
@@ -847,7 +931,7 @@ var ApiClient = class {
     if (parsed.success) return parsed.data;
     const first = parsed.error.issues[0];
     this.warn(
-      `${label}: response does not match the shared schema (${first ? `${first.path.join(".") || "<root>"}: ${first.message}` : "unknown issue"}); passing it through`
+      `${label}: response does not match the shared schema (${first ? `${first.path.map(String).join(".") || "<root>"}: ${first.message}` : "unknown issue"}); passing it through`
     );
     return data;
   }
@@ -977,119 +1061,128 @@ function parseJson(text) {
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-import { z as z13 } from "zod";
-var IdempotencyKey = z13.string().min(1).max(255).regex(/^[\x21-\x7e]+$/, "printable ASCII without whitespace");
+import { z as z15 } from "zod";
+var CountryCode2 = z15.string().regex(/^[A-Z]{2}$/, "ISO-3166 alpha-2");
+var IsoDateTime2 = z15.iso.datetime({ offset: true });
+var ProductSku2 = z15.string().regex(/^[a-z0-9][a-z0-9-]{1,63}$/, "lower-case slug");
+var Term2 = z15.enum(Term.options);
+var UsageGranularity2 = z15.enum(UsageGranularity.options);
+var PortNetwork2 = z15.enum(PORT_NETWORKS);
+function idSchema2(prefix) {
+  return z15.templateLiteral([prefix, "_", z15.string()]).refine((v) => isId(v, prefix), { message: `expected ${prefix}_<ULID>` });
+}
+var IdempotencyKey = z15.string().min(1).max(255).regex(/^[\x21-\x7e]+$/, "printable ASCII without whitespace");
 var ConfirmFields = {
-  confirm: z13.boolean().describe(
+  confirm: z15.boolean().describe(
     "Must be exactly true. Set it only after the user has agreed to this specific action."
   ),
   idempotency_key: IdempotencyKey.describe(
     "Caller-chosen unique key (e.g. a UUID). Re-sending the same key with the same input replays the stored result instead of acting twice."
   )
 };
-var Confirmation = z13.object(ConfirmFields);
-var SearchInventoryInput = z13.object({
-  country: CountryCode.optional().describe('ISO-3166 alpha-2, e.g. "LT"'),
-  carrier: z13.string().min(1).optional().describe("Carrier name filter, exactly as search_inventory returns it")
+var Confirmation = z15.object(ConfirmFields);
+var SearchInventoryInput = z15.object({
+  country: CountryCode2.optional().describe('ISO-3166 alpha-2, e.g. "LT"'),
+  carrier: z15.string().min(1).optional().describe("Carrier name filter, exactly as search_inventory returns it")
 });
-var PortSku = ProductSku.describe('SKU from get_pricing (field skus), e.g. "lt-4g"');
-var QuoteInput = z13.object({
+var PortSku = ProductSku2.describe('SKU from get_pricing (field skus), e.g. "lt-4g"');
+var QuoteInput = z15.object({
   sku: PortSku,
-  term: Term,
-  quantity: z13.number().int().min(1).max(1e3)
+  term: Term2,
+  quantity: z15.number().int().min(1).max(1e3)
 });
-var BuyPortInput = z13.object({
+var BuyPortInput = z15.object({
   sku: PortSku,
-  term: Term,
-  carrier_id: idSchema("car").optional().describe("Pin a carrier (from search_inventory); omit for any"),
-  auto_renew: z13.boolean().optional(),
+  term: Term2,
+  carrier_id: idSchema2("car").optional().describe("Pin a carrier (from search_inventory); omit for any"),
+  auto_renew: z15.boolean().optional(),
   ...ConfirmFields
 });
-var ListPortsInput = z13.object({
-  limit: z13.number().int().min(1).max(200).optional().describe("Page size, default 50"),
-  cursor: z13.string().min(1).optional().describe("next_cursor from the previous page")
+var ListPortsInput = z15.object({
+  limit: z15.number().int().min(1).max(200).optional().describe("Page size, default 50"),
+  cursor: z15.string().min(1).optional().describe("next_cursor from the previous page")
 });
-var PortIdInput = z13.object({ port_id: idSchema("prt") });
-var RotateInput = z13.object({
-  port_id: idSchema("prt"),
+var PortIdInput = z15.object({ port_id: idSchema2("prt") });
+var RotateInput = z15.object({
+  port_id: idSchema2("prt"),
   ...ConfirmFields
 });
-var RenewPortInput = z13.object({
-  port_id: idSchema("prt"),
+var RenewPortInput = z15.object({
+  port_id: idSchema2("prt"),
   ...ConfirmFields
 });
-var SetAutoRenewInput = z13.object({
-  port_id: idSchema("prt"),
-  enabled: z13.boolean().describe(
+var SetAutoRenewInput = z15.object({
+  port_id: idSchema2("prt"),
+  enabled: z15.boolean().describe(
     "true = renew from the account balance before the term ends; false = the port ends at the end of its term"
   ),
   ...ConfirmFields
 });
-var SetRotationScheduleInput = z13.object({
-  port_id: idSchema("prt"),
-  interval_s: z13.number().int().refine((v) => v === 0 || v >= ROTATION_INTERVAL_MIN_S && v <= ROTATION_INTERVAL_MAX_S, {
+var SetRotationScheduleInput = z15.object({
+  port_id: idSchema2("prt"),
+  interval_s: z15.number().int().refine((v) => v === 0 || v >= ROTATION_INTERVAL_MIN_S && v <= ROTATION_INTERVAL_MAX_S, {
     message: `interval_s must be 0 (sticky) or ${ROTATION_INTERVAL_MIN_S}..${ROTATION_INTERVAL_MAX_S}`
   }).describe(
     "0 = sticky (no scheduled rotation), otherwise seconds between rotations (60..86400)"
   ),
   ...ConfirmFields
 });
-var ReceiptIdInput = z13.object({
-  receipt_id: idSchema("rot").describe("Rotation record id (equals the rotation id, rot_...)")
+var ReceiptIdInput = z15.object({
+  receipt_id: idSchema2("rot").describe("Rotation record id (equals the rotation id, rot_...)")
 });
-var GetUsageInput = z13.object({
-  port_id: idSchema("prt"),
-  from: IsoDateTime.optional().describe("ISO 8601 UTC, default: API default window"),
-  to: IsoDateTime.optional(),
-  granularity: UsageGranularity.optional().describe("minute | hour | day (default hour)")
+var GetUsageInput = z15.object({
+  port_id: idSchema2("prt"),
+  from: IsoDateTime2.optional().describe("ISO 8601 UTC, default: API default window"),
+  to: IsoDateTime2.optional(),
+  granularity: UsageGranularity2.optional().describe("minute | hour | day (default hour)")
 });
-var EmptyInput = z13.object({});
+var EmptyInput = z15.object({});
 var MOBILE_COUNTRIES_TEXT = TRAFFIC_MOBILE_COUNTRIES.map((c) => c === "GE" ? "GE = Georgia (country)" : c).join(", ");
-var TrafficPoolField = z13.enum(["mobile", "residential", "best"]).describe(`mobile = 4G/5G carrier modems (${MOBILE_COUNTRIES_TEXT}); residential = opt-in peer devices in the countries list_countries reports online now; best = whichever is available`);
-var TrafficCountryField = z13.string().regex(/^([a-z]{2}|any)$/i).describe('ISO-3166 alpha-2 (e.g. "GB") or "any"; see list_countries for what is online now');
-var TrafficRotationField = z13.enum(["auto5", "auto10", "auto20", "auto60", "ondemand", "sticky"]).describe("auto5|auto10|auto20|auto60 = new IP every N minutes; ondemand = new IP on every connection; sticky = keep the same device for the session (the carrier may still change its IP)");
-var BuildProxyUrlInput = z13.object({
+var TrafficPoolField = z15.enum(["mobile", "residential", "best"]).describe(`mobile = 4G/5G carrier modems (${MOBILE_COUNTRIES_TEXT}); residential = opt-in peer devices in the countries list_countries reports online now; best = whichever is available`);
+var TrafficCountryField = z15.string().regex(/^([a-z]{2}|any)$/i).describe('ISO-3166 alpha-2 (e.g. "GB") or "any"; see list_countries for what is online now');
+var TrafficRotationField = z15.enum(["auto5", "auto10", "auto20", "auto60", "ondemand", "sticky"]).describe("auto5|auto10|auto20|auto60 = new IP every N minutes; ondemand = new IP on every connection; sticky = keep the same device for the session (the carrier may still change its IP)");
+var BuildProxyUrlInput = z15.object({
   pool: TrafficPoolField,
   country: TrafficCountryField,
   rotation: TrafficRotationField,
-  session: z13.string().regex(/^[a-z0-9_]{1,64}$/).optional().describe("Session name, a-z 0-9 _ only. Optional: a stable one is derived for sticky."),
-  protocol: z13.enum(["http", "socks5"]).optional().describe("Default http"),
-  reveal_password: z13.boolean().optional().describe("Default false: the URL comes back with the password masked. Set true only when the user needs the working URL.")
+  session: z15.string().regex(/^[a-z0-9_]{1,64}$/).optional().describe("Session name, a-z 0-9 _ only. Optional: a stable one is derived for sticky."),
+  protocol: z15.enum(["http", "socks5"]).optional().describe("Default http"),
+  reveal_password: z15.boolean().optional().describe("Default false: the URL comes back with the password masked. Set true only when the user needs the working URL.")
 });
-var TestConnectionInput = z13.object({
+var TestConnectionInput = z15.object({
   pool: TrafficPoolField.optional(),
   country: TrafficCountryField.optional(),
   rotation: TrafficRotationField.optional()
 });
-var BuyTrafficInput = z13.object({
-  gb: z13.number().int().min(1).max(1e3).optional().describe("Whole GB to add to the balance. Omit when trial is true."),
-  trial: z13.boolean().optional().describe("Buy the one-off 0.5 GB trial instead (once per customer)."),
-  accept_terms: z13.boolean().optional().describe(
+var BuyTrafficInput = z15.object({
+  gb: z15.number().int().min(1).max(1e3).optional().describe("Whole GB to add to the balance. Omit when trial is true."),
+  trial: z15.boolean().optional().describe("Buy the one-off trial instead (once per customer; get_pricing, field traffic.trial, gives its GB and price)."),
+  accept_terms: z15.boolean().optional().describe(
     "Must be exactly true: the user accepts the terms (https://portproof.org/legal/terms), the acceptable-use policy (https://portproof.org/legal/aup) and the immediate start of the service. Ask the user; the API refuses a purchase without it."
   ),
   ...ConfirmFields
 });
-var PortSummary = z13.object({
-  id: idSchema("prt"),
-  label: z13.string(),
-  network: PortNetwork,
-  state: z13.string(),
-  site_code: z13.string().optional(),
-  country: z13.string(),
-  carrier: z13.string(),
-  ip_stack: z13.string(),
-  egress_v4: z13.string().nullable(),
-  egress_v6_prefix: z13.string().nullable(),
-  rotation_interval_s: z13.number().int(),
-  last_rotation_at: z13.string().nullable(),
-  usage_today_bytes: z13.number().int().nullable(),
-  daily_cap_bytes: z13.number().int().nullable(),
-  uptime_30d_pct: z13.number().nullable(),
-  subscription_ends_at: z13.string().nullable(),
-  auto_renew: z13.boolean().nullable(),
-  operator: z13.enum(["owned", "partner"]),
-  evidence: z13.enum(["signed", "observed"]),
-  attestation: z13.enum(["signed", "observed"])
+var PortSummary = z15.object({
+  id: idSchema2("prt"),
+  label: z15.string(),
+  network: PortNetwork2,
+  state: z15.string(),
+  site_code: z15.string().optional(),
+  country: z15.string(),
+  carrier: z15.string(),
+  ip_stack: z15.string(),
+  egress_v4: z15.string().nullable(),
+  egress_v6_prefix: z15.string().nullable(),
+  rotation_interval_s: z15.number().int(),
+  last_rotation_at: z15.string().nullable(),
+  usage_today_bytes: z15.number().int().nullable(),
+  daily_cap_bytes: z15.number().int().nullable(),
+  uptime_30d_pct: z15.number().nullable(),
+  subscription_ends_at: z15.string().nullable(),
+  auto_renew: z15.boolean().nullable(),
+  operator: z15.enum(["owned", "partner"]),
+  evidence: z15.enum(["signed", "observed"]),
+  attestation: z15.enum(["signed", "observed"])
 });
 
 function jsonResult(payload) {
@@ -1334,7 +1427,7 @@ function shopAnswer(listing, requestedTerm, ctx) {
   const shopUrl = ctx.api.shopOrigin === null ? null : `${ctx.api.shopOrigin}${shopPath}`;
   const steps = [
     "This port is bought in the Portproof web shop, not through buy_port: open shop_url, add it to the cart and check out.",
-    "The port is delivered after payment and company verification."
+    "Delivery follows confirmed payment and current product availability."
   ];
   if (listing.term !== requestedTerm) {
     steps.push(
@@ -1380,7 +1473,7 @@ async function answerCatalogueBuy(args, ctx) {
 var buyPort = defineTool({
   name: "buy_port",
   title: "Buy a port",
-  description: 'Dedicated mobile ports: buy one dedicated mobile port (one modem, one SIM, one customer) for a SKU and term; check search_inventory first. For proxies by the GB use buy_traffic instead. CHARGES MONEY: requires confirm: true and an idempotency_key; refused otherwise. Fails with kyb_required (402) until the org has passed KYB tier t1, and no_inventory (409) when the SKU is sold out. Returns the Port with credentials and cost_cents. Partner network SKUs (buy_via "cart" in get_pricing) are bought in the web shop: for them nothing is charged and the answer is purchased: false with shop_url, or not_on_sale when they are not on sale for your organisation.',
+  description: 'Private mobile ports (dedicated mobile ports): rent one port, a mobile device reserved for your organisation for the chosen term, by SKU and term; check search_inventory first. A port is separate from the shared GB balance: for proxy traffic by the GB use buy_traffic instead. CHARGES MONEY: requires confirm: true and an idempotency_key; refused otherwise. Fails with no_inventory (409) when the SKU is sold out. Returns the Port with credentials and cost_cents. Partner network SKUs (buy_via "cart" in get_pricing) are bought in the web shop: for them nothing is charged and the answer is purchased: false with shop_url, or not_on_sale when they are not on sale for your organisation.',
   inputSchema: BuyPortInput,
   annotations: MUTATING,
   run: async (args, ctx) => {
@@ -1493,7 +1586,7 @@ var setRotationSchedule = defineTool({
 var renewPort = defineTool({
   name: "renew_port",
   title: "Renew a port",
-  description: "Dedicated ports: renew one port for one more term now, paid from the account balance. Read get_port first: renewal.can_renew says whether it can be renewed now and renewal.price_cents what one more term costs. A Partner network port is renewed on the network first and ends_at is the end it confirmed; there is no grace period after a term ends. CHARGES MONEY: requires confirm: true and an idempotency_key; refused otherwise. Errors: insufficient_funds (402, nothing charged: top up the balance), conflict (409, for example while an earlier renewal is still being confirmed), supply_source_error (502, the renewal was refused and the charge refunded). Returns ends_at and cost_cents.",
+  description: "Private mobile ports: renew one port for one more term now, paid from the account balance. Read get_port first: renewal.can_renew says whether it can be renewed now and renewal.price_cents what one more term costs. A Partner network port is renewed on the network first and ends_at is the end it confirmed; there is no grace period after a term ends. CHARGES MONEY: requires confirm: true and an idempotency_key; refused otherwise. Errors: insufficient_funds (402, nothing charged: top up the balance), conflict (409, for example while an earlier renewal is still being confirmed), supply_source_error (502, the renewal was refused and the charge refunded). Returns ends_at and cost_cents.",
   inputSchema: RenewPortInput,
   annotations: MUTATING,
   run: async (args, ctx) => {
@@ -1514,7 +1607,7 @@ var renewPort = defineTool({
 var setAutoRenew = defineTool({
   name: "set_auto_renew",
   title: "Set auto-renew",
-  description: "Dedicated ports: switch auto-renew of one port on or off. On: the port is renewed from the account balance shortly before its term ends (a short balance means it ends). Off: the port ends at the end of its current term, with no refund. Changes the subscription: requires confirm: true and an idempotency_key; refused otherwise. No charge now.",
+  description: "Private mobile ports: switch auto-renew of one port on or off. On: the port is renewed from the account balance shortly before its term ends (a short balance means it ends). Off: the port ends at the end of its current term, with no refund. Changes the subscription: requires confirm: true and an idempotency_key; refused otherwise. No charge now.",
   inputSchema: SetAutoRenewInput,
   annotations: MUTATING,
   run: async (args, ctx) => {
@@ -1537,7 +1630,7 @@ var setAutoRenew = defineTool({
 var getPricing = defineTool({
   name: "get_pricing",
   title: "Get pricing",
-  description: 'Public price table. Field traffic: proxy traffic by the GB (tier table with the per-GB price by order size in EUR cents ex VAT, package sizes, the 0.5 GB trial, validity days, monthly GB without company verification); buy it with buy_traffic. Field skus: dedicated mobile ports with monthly price in cents (EUR, USD for us-4g), supply (evidence signed = Own network, observed = Partner network), volume ladder, weekly/daily term ratios and the 24 h trial. Each SKU says how it is bought (buy_via): "ports" SKUs work with quote and buy_port; "cart" SKUs are Partner network ports, one SKU per term, sold only through the web shop (quote and buy_port answer them with the shop link). Partner network ports are listed only while they are on sale for your organisation, so the list can differ with and without an API key. No API key needed. Prices are quotes only; nothing is charged.',
+  description: 'Public price table. Field traffic: shared proxy traffic by the GB (tier table with the per-GB price in cents by order size, package sizes, the one-off trial with its GB and price, validity days: 0 means GB never expire); buy it with buy_traffic. Field skus: private mobile ports (dedicated mobile ports, rented by term) with the price in cents for each term and its currency, supply (evidence signed = Own network, observed = Partner network), volume ladder, term ratios and the port trial (field trial). currency_note says which prices are not in EUR and how VAT applies. Each SKU says how it is bought (buy_via): "ports" SKUs work with quote and buy_port; "cart" SKUs are Partner network ports, one SKU per term, sold only through the web shop (quote and buy_port answer them with the shop link). Partner network ports are listed only while they are on sale for your organisation, so the list can differ with and without an API key. No API key needed. Prices are quotes only; nothing is charged. Quote the numbers this tool returns, never remembered ones.',
   inputSchema: EmptyInput,
   annotations: READ_ONLY,
   run: async (_args, ctx) => jsonResult(await ctx.api.getPricing())
@@ -1545,7 +1638,7 @@ var getPricing = defineTool({
 var searchInventory = defineTool({
   name: "search_inventory",
   title: "Search inventory",
-  description: "Dedicated mobile ports: available Own network dedicated mobile ports per country / site / carrier, with the number available and whether new ports are wait-listed. Use the returned carrier_id to pin a carrier in buy_port. Partner network ports are not listed here: get_pricing lists the ones on sale for you. No API key needed.",
+  description: "Private mobile ports (dedicated mobile ports): available Own network ports per country / site / carrier, with the number available and whether new ports are wait-listed. Use the returned carrier_id to pin a carrier in buy_port. Partner network ports are not listed here: get_pricing lists the ones on sale for you. No API key needed.",
   inputSchema: SearchInventoryInput,
   annotations: READ_ONLY,
   run: async (args, ctx) => {
@@ -1595,7 +1688,7 @@ var MASK = "pak_****";
 var getTraffic = defineTool({
   name: "get_traffic",
   title: "Get the traffic balance",
-  description: "Proxy traffic balance of the organisation: GB total / used / left, expiry, whether the key is enabled, daily usage and the purchase limits (validity days, monthly GB without company verification, whether the trial is still available). Connection details (host, ports, username base) are included when the API key holds ports:write (credentials is null otherwise); the password is masked here, use build_proxy_url with reveal_password: true when the user needs a working URL. Usage is synced every 5 minutes.",
+  description: "Proxy traffic balance of the organisation: GB total / used / left, expiry, whether the key is enabled, daily usage and the purchase limits (validity days, whether the trial is still available). Connection details (host, ports, username base) are included when the API key holds ports:write (credentials is null otherwise); the password is masked here, use build_proxy_url with reveal_password: true when the user needs a working URL. Usage is synced every 5 minutes.",
   inputSchema: EmptyInput,
   annotations: READ_ONLY,
   run: async (_args, ctx) => {
@@ -1631,7 +1724,7 @@ var buildProxyUrl = defineTool({
 var buyTraffic = defineTool({
   name: "buy_traffic",
   title: "Buy proxy traffic",
-  description: "Buy whole GB of proxy traffic (or the one-off 0.5 GB trial) from the wallet balance. CHARGES MONEY: requires confirm: true, accept_terms: true (the user accepts the terms, the acceptable-use policy and the immediate start of the service; ask them) and an idempotency_key; refused otherwise. Needs an API key with ports:write. The server prices the order from the tier table (see get_pricing, field traffic); the GB are added to the same balance and credentials. Validity is what get_traffic reports: limits.validity_days 0 means GB never expire. Fails with insufficient_funds (402) when the wallet is too low, kyb_required_for_volume (402) above the monthly volume for unverified organisations, trial_already_used (409), idempotency_conflict (409) when the idempotency_key was already used for a different purchase. A refused purchase stays stored under its idempotency_key for 24 h: after fixing the cause (for example a wallet top-up), buy with a new key. Returns the order with gb and cost_cents as the server recorded them.",
+  description: "Buy whole GB of shared proxy traffic (or the one-off trial; get_pricing, field traffic.trial, gives its GB and price) from the wallet balance. CHARGES MONEY: requires confirm: true, accept_terms: true (the user accepts the terms, the acceptable-use policy and the immediate start of the service; ask them) and an idempotency_key; refused otherwise. Needs an API key with ports:write. The server prices the order from the tier table (see get_pricing, field traffic); the GB are added to the same balance and credentials. Validity is what get_traffic reports: limits.validity_days 0 means GB never expire. Fails with insufficient_funds (402) when the wallet is too low, trial_already_used (409), idempotency_conflict (409) when the idempotency_key was already used for a different purchase. A refused purchase stays stored under its idempotency_key for 24 h: after fixing the cause (for example a wallet top-up), buy with a new key. Returns the order with gb and cost_cents as the server recorded them.",
   inputSchema: BuyTrafficInput,
   annotations: MUTATING,
   run: async (args, ctx) => {
@@ -1645,11 +1738,11 @@ var buyTraffic = defineTool({
       );
     }
     if (args.trial === true === (args.gb !== void 0)) {
-      return localError("validation_failed", "Send either gb or trial: true", "gb is a whole number of GB (1 to 1000); trial: true buys the one-off 0.5 GB trial instead.");
+      return localError("validation_failed", "Send either gb or trial: true", "gb is a whole number of GB (1 to 1000); trial: true buys the one-off trial instead (get_pricing, field traffic.trial, gives its GB and price).");
     }
     const out = await ctx.api.buyTraffic(args.trial === true ? { trial: true, accept_terms: true } : { gb: args.gb, accept_terms: true }, args.idempotency_key);
     const o = out.order;
-    const gb = o.items.reduce((n, it) => n + it.quantity * (it.sku_snapshot.sku === TRAFFIC_TRIAL.sku ? TRAFFIC_TRIAL.gb : 1), 0);
+    const gb = o.items.reduce((n, it) => n + it.quantity * trafficSnapshotGbPerUnit(it.sku_snapshot), 0);
     return jsonResult({
       order_id: o.id,
       order_number: o.number,
@@ -1752,12 +1845,12 @@ if (registered.size !== TOOL_NAMES.length)
 
 var INSTRUCTIONS = [
   `Portproof sells proxy traffic by the GB: one prepaid GB balance per organisation, usable on two shared pools, mobile 4G/5G (carrier modems in ${MOBILE_COUNTRIES_TEXT}) and residential (opt-in peer devices; the countries online now come from list_countries, so never state a country count from memory). Pool, country, rotation (new IP every 5 / 10 / 20 / 60 minutes, on every connection, or a sticky session) and the session name are chosen in the proxy username, so one credential serves everything. Be precise: the pools are shared, a sticky session keeps the same device and the carrier may still change its IP; never call this traffic dedicated, private, static or unlimited, and never list pool exit addresses. Validity is what get_traffic reports: limits.validity_days 0 (and expires_at null) means GB never expire; a positive number is the days of validity every purchase guarantees for the whole balance.`,
-  "Traffic tools: get_traffic (balance, expiry, limits), list_countries (devices online now per pool), build_proxy_url (username, URL and code snippets; the password stays masked unless reveal_password is true), test_connection (one request through the gateway: exit IP and latency; exit_country is normally null because the exit country is not checked; never report the requested country as the exit country), buy_traffic (wallet purchase of whole GB or the one-off 0.5 GB trial; prices come from the tier table in get_pricing, field traffic).",
-  'Dedicated mobile ports (one modem, one SIM, one customer per port; sold by the day, week or month) are on sale: get_pricing (field skus) lists the SKUs the caller may buy, search_inventory and quote work without a key, and list_ports, get_port, rotate, set_rotation_schedule, renew_port, set_auto_renew, get_passport, get_receipt and get_usage work on the ports the organisation holds. Every port states its supply: "signed" evidence means Own network (each rotation record is signed on the device), "observed" evidence means Partner network (recorded by our monitoring and signed by the control plane key); never describe a Partner network port as signed on the device. Name a port by its label (country, carrier, port id) and say only "Partner network" about where a Partner network port runs.',
-  'Partner network ports are bought in the web shop, one SKU per term (buy_via "cart" in get_pricing): quote and buy_port answer them with shop_url and never charge. Their HTTP and SOCKS5 connections may differ in host, port, login and password: give the user proxy_urls from get_port, never a URL assembled from one set. rotation_url is the Portproof link that rotates the IP when fetched. They renew from the account balance: renewal in get_port says what one more term costs and whether it can be renewed now; auto-renew off means the port ends at the end of its term.',
+  "Traffic tools: get_traffic (balance, expiry, limits), list_countries (devices online now per pool), build_proxy_url (username, URL and code snippets; the password stays masked unless reveal_password is true), test_connection (one request through the gateway: exit IP and latency; exit_country is normally null because the exit country is not checked; never report the requested country as the exit country), buy_traffic (wallet purchase of whole GB or the one-off trial; the tier prices and the trial's GB and price come from get_pricing, field traffic: quote those numbers, never remembered ones).",
+  `Private mobile ports (dedicated mobile ports: one mobile device reserved for the organisation for a rental term, priced per device and term and separate from the shared GB balance; the device's mobile IP can change) are on sale: get_pricing (field skus) lists the SKUs the caller may buy, search_inventory and quote work without a key, and list_ports, get_port, rotate, set_rotation_schedule, renew_port, set_auto_renew, get_passport, get_receipt and get_usage work on the ports the organisation holds. Every port states its supply: "signed" evidence means Own network (each rotation record is signed on the device), "observed" evidence means Partner network (recorded by our monitoring and signed by the control plane key); never describe a Partner network port as signed on the device. Name a port by its label (country, carrier, port id) and say only "Partner network" about where a Partner network port runs.`,
+  'Partner network ports are bought in the web shop, one SKU per term (buy_via "cart" in get_pricing): quote and buy_port answer them with shop_url and never charge. Their HTTP and SOCKS5 connections may differ in host, port, login and password: give the user proxy_urls from get_port, never a URL assembled from one set. rotation_url is the Portproof link that rotates the IP when fetched. They renew from the account balance: renewal in get_port says what one more term costs and whether it can be renewed now; auto-renew off means the port ends at the end of its term. GB never expire while validity_days is 0; port terms do end.',
   "Read tools (get_pricing, search_inventory, quote, list_ports, get_port, get_passport, get_receipt, get_usage, get_status, get_traffic, list_countries, build_proxy_url) are safe to call freely; test_connection uses a few kilobytes of the balance and is limited to 6 per minute.",
   "buy_traffic, buy_port and renew_port charge money, rotate and set_rotation_schedule change live proxy state and set_auto_renew changes the subscription: they are refused unless called with confirm: true and an idempotency_key. buy_traffic also needs accept_terms: true, which records that the user accepts the terms, the acceptable-use policy and the immediate start of the service. Ask the user before setting confirm: true or accept_terms: true, and reuse the same idempotency_key only to retry the identical request.",
-  'Every response is compact JSON. Successful purchases include cost_cents. Errors are {"error": {code, status, title, detail}} using the API problem codes (insufficient_funds, kyb_required_for_volume, trial_already_used, traffic_not_purchased, kyb_required, no_inventory, use_cart, port_cooldown with retry_after, conflict, insufficient_scope, not_found, validation_failed, ...) plus local codes such as not_on_sale.',
+  'Every response is compact JSON. Successful purchases include cost_cents. Errors are {"error": {code, status, title, detail}} using the API problem codes (insufficient_funds, trial_already_used, traffic_not_purchased, no_inventory, use_cart, port_cooldown with retry_after, conflict, insufficient_scope, not_found, validation_failed, ...) plus local codes such as not_on_sale.',
   "get_pricing, search_inventory, quote, get_status and list_countries work without an API key; everything else needs PORTPROOF_API_KEY. Key scopes are enforced: get_traffic needs ports:read (connection details only with ports:write), and build_proxy_url, test_connection and buy_traffic need ports:write; a missing scope answers insufficient_scope."
 ].join(" ");
 function createServer(ctx) {

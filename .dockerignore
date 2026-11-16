@@ -1,0 +1,8 @@
+.git
+.github
+node_modules
+assets
+scripts
+.env
+.env.*
+*.pem

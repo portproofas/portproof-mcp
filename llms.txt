@@ -1,6 +1,6 @@
 # Portproof MCP server
 
-> Proxy traffic by the GB: one prepaid GB balance per organisation, usable on two shared pools, mobile 4G/5G (carrier modems) and residential (opt-in peer devices). Pool, country, rotation and session are chosen in the proxy username, so one credential serves everything. The pools are shared: the traffic is never dedicated, private, static or unlimited, and a sticky session keeps the same device while the carrier may still change its IP. Countries online now come from list_countries; never state a country count from memory. Dedicated mobile ports (one modem, one SIM, one customer; by the day, week or month) are sold beside the pools: get_pricing lists the SKUs on sale. Paid in cryptocurrency. This stdio MCP server (npm package @portproof/mcp) exposes the Portproof API (base `PORTPROOF_API_URL` + `/v1`, default https://api.portproof.org; key `PORTPROOF_API_KEY`) as nineteen tools.
+> Proxy traffic by the GB: one prepaid GB balance per organisation, usable on two shared pools, mobile 4G/5G (carrier modems) and residential (opt-in peer devices). Pool, country, rotation and session are chosen in the proxy username, so one credential serves everything. The pools are shared: the traffic is never dedicated, private, static or unlimited, and a sticky session keeps the same device while the carrier may still change its IP. Countries online now come from list_countries; never state a country count from memory. GB never expire while get_traffic reports validity_days 0. Private mobile ports (dedicated mobile ports: one mobile device reserved for the organisation for a rental term, priced per device and term, separate from the GB balance; the mobile IP can change) are sold beside the pools: get_pricing lists the SKUs on sale. This stdio MCP server (npm package @portproof/mcp) exposes the Portproof API (base `PORTPROOF_API_URL` + `/v1`, default https://api.portproof.org; key `PORTPROOF_API_KEY`) as nineteen tools.
 
 ## Traffic tools
 
@@ -8,9 +8,9 @@
 - list_countries {} -> devices online now per pool and country, counts only (exit addresses are never listed). Public.
 - build_proxy_url { pool, country, rotation, session?, protocol?, reveal_password? } -> username, URL and curl / Python / Node / Playwright snippets; password masked unless reveal_password is true. Key scope ports:write.
 - test_connection { pool?, country?, rotation? } -> ok, exit IP, latency, error_code; exit_country is normally null (no country check); never report the requested country as the exit country. 6 per minute. Key scope ports:write.
-- buy_traffic { gb | trial:true, accept_terms:true, confirm:true, idempotency_key } -> order with gb and cost_cents as the server recorded them. Charges the wallet. accept_terms records that the user accepts the terms, the acceptable-use policy and the immediate start of the service. Key scope ports:write.
+- buy_traffic { gb | trial:true, accept_terms:true, confirm:true, idempotency_key } -> order with gb and cost_cents as the server recorded them. Charges the wallet. The trial's GB and price come from get_pricing (traffic.trial). accept_terms records that the user accepts the terms, the acceptable-use policy and the immediate start of the service. Key scope ports:write.
 
-## Port tools (dedicated mobile ports)
+## Port tools (private mobile ports, rented by term)
 
 - get_pricing {} -> field traffic (per-GB tier table, packages, trial, validity) and field skus (port price table; buy_via ports or cart; Partner network SKUs only while on sale for the caller's organisation). Public.
 - search_inventory { country?, carrier? } -> available Own network ports per site/carrier with carrier_id. Public.
@@ -31,12 +31,14 @@
 
 - buy_traffic, buy_port, renew_port, rotate, set_rotation_schedule and set_auto_renew are refused (error code confirmation_required / idempotency_key_required, no API call made) unless confirm is exactly true and idempotency_key is a non-empty printable string; buy_traffic is also refused (terms_acceptance_required) without accept_terms: true. Ask the user before confirming. A refused purchase stays stored under its key for 24 h, so buy with a new key after fixing the cause. Reuse an idempotency_key only to retry the identical request; the API answers idempotency_conflict (409) when a key is reused for a different purchase.
 - cost_cents is present whenever money moved (buy_traffic, buy_port, renew_port). quote never charges.
-- Every response is compact JSON in one text block. Errors: {"error":{code,status,title,detail,retry_after?,errors?}} using API problem codes: insufficient_funds, kyb_required_for_volume, trial_already_used, traffic_not_purchased, kyb_required, no_inventory, use_cart, conflict, port_cooldown (retry_after seconds), rescore_quota, insufficient_scope, unauthorized, not_found, validation_failed, idempotency_conflict, rate_limited; local codes: confirmation_required, idempotency_key_required, terms_acceptance_required, not_on_sale, api_unreachable, timeout, http_error, config_missing (no PORTPROOF_API_KEY), unexpected_response.
+- Every response is compact JSON in one text block. Errors: {"error":{code,status,title,detail,retry_after?,errors?}} using API problem codes: insufficient_funds, trial_already_used, traffic_not_purchased, no_inventory, use_cart, conflict, port_cooldown (retry_after seconds), rescore_quota, insufficient_scope, unauthorized, not_found, validation_failed, idempotency_conflict, rate_limited; local codes: confirmation_required, idempotency_key_required, terms_acceptance_required, not_on_sale, api_unreachable, timeout, http_error, config_missing (no PORTPROOF_API_KEY), unexpected_response.
 - Ids are prefixed ULIDs: prt_ ports, rot_ rotations (rotation records), car_ carriers, ord_ orders.
-- Money is integer cents in EUR (the us-4g port SKU is USD). Times are ISO 8601 UTC.
+- Money is integer cents in the currency each object states; get_pricing's currency_note says which prices are not in EUR and how VAT applies. Quote prices from the API, never from memory. Times are ISO 8601 UTC.
 
 ## Setup
 
 - Run: npx -y @portproof/mcp (Node.js 20 or newer) with PORTPROOF_API_KEY in the environment. PORTPROOF_API_URL is optional and defaults to https://api.portproof.org.
 - Client config: {"mcpServers":{"portproof":{"command":"npx","args":["-y","@portproof/mcp"],"env":{"PORTPROOF_API_KEY":"pk_live_..."}}}}. Claude Desktop, Claude Code and Cursor snippets are in README.md.
 - API keys are created in the dashboard at https://portproof.org/app/keys; there is no sandbox, every key acts on the real balance.
+- GB are bought at https://portproof.org/proxies and private mobile ports at https://portproof.org/dedicated-mobile-proxies; payments are accepted in cryptocurrency.
+- Guides: https://portproof.org/guides/proxy-mcp-server-for-ai-agents and https://portproof.org/docs#mcp. Release mirror: https://github.com/portproofas/portproof-mcp.

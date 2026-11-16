@@ -2,14 +2,16 @@
 
 # Portproof MCP
 
+[![MCP Badge](https://lobehub.com/badge/mcp/portproofas-portproof-mcp)](https://lobehub.com/mcp/portproofas-portproof-mcp)
+
 **Connect your agent to Portproof.**
 
 Check your GB balance, choose a pool and build a proxy connection from your MCP
 client. Mobile 4G/5G and residential traffic share one prepaid balance.
 
-[Website](https://portproof.org) · [Setup guide](https://portproof.org/guides/proxy-mcp-server-for-ai-agents) · [Documentation](https://portproof.org/docs) · [npm](https://www.npmjs.com/package/@portproof/mcp) · [Status](https://portproof.org/status)
+[Website](https://portproof.org) · [Setup guide](https://portproof.org/guides/proxy-mcp-server-for-ai-agents) · [Documentation](https://portproof.org/docs#mcp) · [npm](https://www.npmjs.com/package/@portproof/mcp) · [Status](https://portproof.org/status)
 
-Local stdio server · Node.js 20+ · MIT · `@portproof/mcp@0.2.1`
+Local stdio server · Node.js 20+ · MIT · `@portproof/mcp@0.2.2`
 
 ## From settings to a connection
 
@@ -34,7 +36,7 @@ pricing, service status and current coverage without an API key.
   "mcpServers": {
     "portproof": {
       "command": "npx",
-      "args": ["-y", "@portproof/mcp@0.2.1"]
+      "args": ["-y", "@portproof/mcp@0.2.2"]
     }
   }
 }
@@ -59,7 +61,7 @@ in a project repository. Check the server in Cursor's MCP settings.
 Register Portproof in your personal configuration:
 
 ```sh
-claude mcp add --transport stdio --scope user portproof -- npx -y @portproof/mcp@0.2.1
+claude mcp add --transport stdio --scope user portproof -- npx -y @portproof/mcp@0.2.2
 claude mcp get portproof
 ```
 
@@ -77,7 +79,7 @@ use this account-enabled configuration:
   "mcpServers": {
     "portproof": {
       "command": "npx",
-      "args": ["-y", "@portproof/mcp@0.2.1"],
+      "args": ["-y", "@portproof/mcp@0.2.2"],
       "env": {
         "PORTPROOF_API_KEY": "YOUR_PORTPROOF_API_KEY"
       }
@@ -111,13 +113,16 @@ and an `idempotency_key`; traffic purchases also require `accept_terms: true`.
 The server instructs the client to ask before confirming those actions.
 Passwords in generated proxy URLs stay masked unless explicitly requested.
 
-The published bundle also exposes port-management tools; actual availability and
-eligibility are determined by the service. See [the documentation](https://portproof.org/docs)
-for the current offer and tool behavior.
+The bundle also includes the tools for private mobile ports, a separate product rented
+by term: one mobile device reserved for your organisation
+([dedicated mobile proxies](https://portproof.org/dedicated-mobile-proxies)). `buy_port`
+rents Own network ports from your account balance; Partner network ports are bought in
+the web shop. Renewals are paid from the balance, ports are separate from the shared GB
+traffic, and `get_pricing` lists what is on sale.
 
 ## About this repository
 
-This is a **release mirror** of `@portproof/mcp` **0.2.1**, containing the published
+This is a **release mirror** of `@portproof/mcp` **0.2.2**, containing the published
 JavaScript bundle. The shop and original TypeScript development workspace remain
 private. [Release provenance](release-provenance.json) records the npm tarball
 integrity and published file hashes.
@@ -143,16 +148,31 @@ runs the syntax and smoke checks on Node.js 20, 22 and 24, including a Windows
 check on Node.js 22. The smoke tests check the published-file hashes, stdio tool
 discovery and purchase guards without using an account or calling the live API.
 
+### Docker
+
+The `Dockerfile` starts the same stdio server from this mirror, with the runtime
+dependencies only (no build step):
+
+```sh
+docker build -t portproof-mcp .
+docker run -i --rm portproof-mcp
+docker run -i --rm -e PORTPROOF_API_KEY portproof-mcp
+```
+
+The first run offers the public tools; the second passes `PORTPROOF_API_KEY` from
+your shell environment, so the key never appears in the command.
+
 ## Documentation and discovery
 
 - [MCP setup guide](https://portproof.org/guides/proxy-mcp-server-for-ai-agents)
 - [API and proxy documentation](https://portproof.org/docs)
 - [npm package](https://www.npmjs.com/package/@portproof/mcp)
+- [LobeHub listing](https://lobehub.com/mcp/portproofas-portproof-mcp)
 - Official MCP Registry name: `org.portproof/mcp`
 - [Service status](https://portproof.org/status)
 
-`server.json` describes the existing npm release. Its repository field points to
-this mirror; updating that local file does not update the hosted Registry.
+`server.json` is the MCP Registry entry submitted with this release; its repository
+field points to this mirror.
 
 ## Use responsibly
 
