@@ -769,7 +769,7 @@ function trafficSnapshotGbPerUnit(snapshot) {
 }
 
 var SERVER_NAME = "portproof";
-var SERVER_VERSION = "0.2.2";
+var SERVER_VERSION = "0.2.3";
 var USER_AGENT = `portproof-mcp/${SERVER_VERSION}`;
 var DEFAULT_API_URL = "https://api.portproof.org";
 var DEFAULT_TIMEOUT_MS = 3e4;
@@ -1684,7 +1684,7 @@ var getStatus = defineTool({
   run: async (_args, ctx) => jsonResult(await ctx.api.getStatus())
 });
 
-var MASK = "pak_****";
+var MASK = "********";
 var getTraffic = defineTool({
   name: "get_traffic",
   title: "Get the traffic balance",

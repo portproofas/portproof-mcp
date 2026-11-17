@@ -40,5 +40,5 @@
 - Run: npx -y @portproof/mcp (Node.js 20 or newer) with PORTPROOF_API_KEY in the environment. PORTPROOF_API_URL is optional and defaults to https://api.portproof.org.
 - Client config: {"mcpServers":{"portproof":{"command":"npx","args":["-y","@portproof/mcp"],"env":{"PORTPROOF_API_KEY":"pk_live_..."}}}}. Claude Desktop, Claude Code and Cursor snippets are in README.md.
 - API keys are created in the dashboard at https://portproof.org/app/keys; there is no sandbox, every key acts on the real balance.
-- GB are bought at https://portproof.org/proxies and private mobile ports at https://portproof.org/dedicated-mobile-proxies; payments are accepted in cryptocurrency.
+- GB are bought at https://portproof.org/proxies and private mobile ports at https://portproof.org/dedicated-mobile-proxies; pay by card or in cryptocurrency.
 - Guides: https://portproof.org/guides/proxy-mcp-server-for-ai-agents and https://portproof.org/docs#mcp. Release mirror: https://github.com/portproofas/portproof-mcp.

@@ -11,7 +11,7 @@ client. Mobile 4G/5G and residential traffic share one prepaid balance.
 
 [Website](https://portproof.org) · [Setup guide](https://portproof.org/guides/proxy-mcp-server-for-ai-agents) · [Documentation](https://portproof.org/docs#mcp) · [npm](https://www.npmjs.com/package/@portproof/mcp) · [Status](https://portproof.org/status)
 
-Local stdio server · Node.js 20+ · MIT · `@portproof/mcp@0.2.2`
+Local stdio server · Node.js 20+ · MIT · `@portproof/mcp@0.2.3`
 
 ## From settings to a connection
 
@@ -36,7 +36,7 @@ pricing, service status and current coverage without an API key.
   "mcpServers": {
     "portproof": {
       "command": "npx",
-      "args": ["-y", "@portproof/mcp@0.2.2"]
+      "args": ["-y", "@portproof/mcp@0.2.3"]
     }
   }
 }
@@ -61,7 +61,7 @@ in a project repository. Check the server in Cursor's MCP settings.
 Register Portproof in your personal configuration:
 
 ```sh
-claude mcp add --transport stdio --scope user portproof -- npx -y @portproof/mcp@0.2.2
+claude mcp add --transport stdio --scope user portproof -- npx -y @portproof/mcp@0.2.3
 claude mcp get portproof
 ```
 
@@ -79,7 +79,7 @@ use this account-enabled configuration:
   "mcpServers": {
     "portproof": {
       "command": "npx",
-      "args": ["-y", "@portproof/mcp@0.2.2"],
+      "args": ["-y", "@portproof/mcp@0.2.3"],
       "env": {
         "PORTPROOF_API_KEY": "YOUR_PORTPROOF_API_KEY"
       }
@@ -122,7 +122,7 @@ traffic, and `get_pricing` lists what is on sale.
 
 ## About this repository
 
-This is a **release mirror** of `@portproof/mcp` **0.2.2**, containing the published
+This is a **release mirror** of `@portproof/mcp` **0.2.3**, containing the published
 JavaScript bundle. The shop and original TypeScript development workspace remain
 private. [Release provenance](release-provenance.json) records the npm tarball
 integrity and published file hashes.

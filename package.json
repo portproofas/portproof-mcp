@@ -1,6 +1,6 @@
 {
   "name": "@portproof/mcp",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "type": "module",
   "description": "Mobile 4G/5G and residential proxies for AI agents: build proxy URLs, test connections and buy proxy traffic by the GB for price monitoring, ad verification and geo-testing",
   "keywords": [

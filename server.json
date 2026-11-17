@@ -3,7 +3,7 @@
   "name": "org.portproof/mcp",
   "title": "Portproof",
   "description": "Mobile 4G/5G and residential proxies for AI agents: build, test and pay per GB on shared pools.",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "websiteUrl": "https://portproof.org",
   "repository": {
     "url": "https://github.com/portproofas/portproof-mcp",
@@ -15,7 +15,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@portproof/mcp",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"
