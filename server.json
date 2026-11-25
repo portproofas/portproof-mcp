@@ -3,7 +3,7 @@
   "name": "org.portproof/mcp",
   "title": "Portproof",
   "description": "Mobile 4G/5G and residential proxies for AI agents: build, test and pay per GB on shared pools.",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "websiteUrl": "https://portproof.org",
   "repository": {
     "url": "https://github.com/portproofas/portproof-mcp",
@@ -15,7 +15,7 @@
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@portproof/mcp",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"
@@ -23,7 +23,7 @@
       "environmentVariables": [
         {
           "name": "PORTPROOF_API_KEY",
-          "description": "Portproof API key from the dashboard (API keys). Without it only pricing, status and countries online now work.",
+          "description": "Portproof API key from the dashboard (API keys). Without it only the public tools work: get_pricing, get_status, list_countries, search_inventory and quote.",
           "format": "string",
           "isRequired": false,
           "isSecret": true

@@ -11,7 +11,7 @@ client. Mobile 4G/5G and residential traffic share one prepaid balance.
 
 [Website](https://portproof.org) · [Setup guide](https://portproof.org/guides/proxy-mcp-server-for-ai-agents) · [Documentation](https://portproof.org/docs#mcp) · [npm](https://www.npmjs.com/package/@portproof/mcp) · [Status](https://portproof.org/status)
 
-Local stdio server · Node.js 20+ · MIT · `@portproof/mcp@0.2.3`
+Local stdio server · Node.js 20+ · MIT · `@portproof/mcp@0.2.4`
 
 ## From settings to a connection
 
@@ -23,20 +23,24 @@ Local stdio server · Node.js 20+ · MIT · `@portproof/mcp@0.2.3`
 | Test a connection | `test_connection` |
 | Buy traffic with your confirmation | `buy_traffic` |
 
-Both pools are shared. A sticky session keeps the same device while it is online;
-its IP address may still change.
+Both pools are shared. A sticky session prefers the same device but does not
+reserve it, and its IP address may still change.
+
+This server covers proxy traffic and private mobile ports. SMS numbers and eSIMs
+are sold too, in the web shop and through the API, but have no tools here.
 
 ## Connect an MCP client
 
 Add this to a client supporting local **stdio** MCP servers. You can explore
 pricing, service status and current coverage without an API key.
+The same stdio config works in other MCP clients such as Kimi Code CLI.
 
 ```json
 {
   "mcpServers": {
     "portproof": {
       "command": "npx",
-      "args": ["-y", "@portproof/mcp@0.2.3"]
+      "args": ["-y", "@portproof/mcp@0.2.4"]
     }
   }
 }
@@ -61,7 +65,7 @@ in a project repository. Check the server in Cursor's MCP settings.
 Register Portproof in your personal configuration:
 
 ```sh
-claude mcp add --transport stdio --scope user portproof -- npx -y @portproof/mcp@0.2.3
+claude mcp add --transport stdio --scope user portproof -- npx -y @portproof/mcp@0.2.4
 claude mcp get portproof
 ```
 
@@ -79,7 +83,7 @@ use this account-enabled configuration:
   "mcpServers": {
     "portproof": {
       "command": "npx",
-      "args": ["-y", "@portproof/mcp@0.2.3"],
+      "args": ["-y", "@portproof/mcp@0.2.4"],
       "env": {
         "PORTPROOF_API_KEY": "YOUR_PORTPROOF_API_KEY"
       }
@@ -89,9 +93,15 @@ use this account-enabled configuration:
 ```
 
 Keep the real value in your MCP client's private configuration or secret store.
-Never commit it to a repository or put it into a prompt. Reading a traffic balance
-requires `ports:read`; building proxy URLs, testing connections and buying traffic
-require `ports:write`.
+Never commit it to a repository or put it into a prompt. Reading the balance and your
+ports requires `ports:read`; building proxy URLs, testing connections, buying and
+changing things require `ports:write` (`rotate` also uses `ports:read` to follow a
+pending rotation). `get_pricing`, `search_inventory`, `quote`, `get_status` and
+`list_countries` need no key.
+
+No account yet? An agent can create one and its key over HTTP: the steps are in
+the [npm README](https://www.npmjs.com/package/@portproof/mcp) and the
+[reference for LLMs](https://portproof.org/llms-full.txt).
 
 For Claude Desktop and Cursor, update the same personal configuration file used
 above. For Claude Code, add the `env` object to the `portproof` entry under
@@ -108,6 +118,10 @@ The server runs locally. The API URL above is **not a hosted MCP endpoint**.
 ## Purchases and connection tests
 
 Keys act on real account credit; there is no sandbox selected by a key prefix.
+`buy_traffic` and `renew_port` pay from the wallet (account credit in
+euros, separate from the GB balance). This server cannot add funds: a person tops
+up the wallet in the [dashboard](https://portproof.org/app/wallet) or on the
+payment page that `POST /v1/wallet/topup` returns.
 Connection tests use a small amount of traffic. Purchases require `confirm: true`
 and an `idempotency_key`; traffic purchases also require `accept_terms: true`.
 The server instructs the client to ask before confirming those actions.
@@ -115,14 +129,16 @@ Passwords in generated proxy URLs stay masked unless explicitly requested.
 
 The bundle also includes the tools for private mobile ports, a separate product rented
 by term: one mobile device reserved for your organisation
-([dedicated mobile proxies](https://portproof.org/dedicated-mobile-proxies)). `buy_port`
-rents Own network ports from your account balance; Partner network ports are bought in
-the web shop. Renewals are paid from the balance, ports are separate from the shared GB
-traffic, and `get_pricing` lists what is on sale.
+([dedicated mobile proxies](https://portproof.org/dedicated-mobile-proxies)). Ports are
+sold while the shop lists them: `get_pricing` (field `skus`) says what is on sale now and
+lists the SKUs and terms your organisation may buy. Every port on sale is bought in the
+web shop (`buy_via` `"cart"`): `quote` and `buy_port` return the price and the shop link
+and charge nothing. `buy_port` rents directly only for an organisation billed by invoice. Renewals are paid from the wallet, and ports are separate from the shared GB
+traffic.
 
 ## About this repository
 
-This is a **release mirror** of `@portproof/mcp` **0.2.3**, containing the published
+This is a **release mirror** of `@portproof/mcp` **0.2.4**, containing the published
 JavaScript bundle. The shop and original TypeScript development workspace remain
 private. [Release provenance](release-provenance.json) records the npm tarball
 integrity and published file hashes.

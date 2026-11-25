@@ -1,14 +1,14 @@
 {
   "name": "@portproof/mcp",
-  "version": "0.2.3",
-  "tarball": "https://registry.npmjs.org/@portproof/mcp/-/mcp-0.2.3.tgz",
-  "integrity": "sha512-NkgyTFVWV9Vg8T80I5iEuAFZJ8su48ze2VeAdYKr2e3h8JhTYKdhjmcIIyaQViliuVtcDUeL5ktXUI7mtcB5wg==",
+  "version": "0.2.4",
+  "tarball": "https://registry.npmjs.org/@portproof/mcp/-/mcp-0.2.4.tgz",
+  "integrity": "sha512-ZlSolzEK0PumX7ZF9tEulbk3DV4PONA3QkMuaj1uUc008Iqmxzs4BrdOR3R3MJ71833EIg2QegsST56rDmLZdg==",
   "published_file_sha256": {
     "LICENSE": "24b2af2fd0d305cc0994e929ef0df619f138ac60af0019306881533e01b5f756",
-    "dist/index.js": "c7609dcb1f26277f844e73a716e5ff6ff29c86290b5238c9e465ae9f2e9145bd",
-    "package.json": "196465779d080b031818dd21df6d99ec6b9d3cf74373e4626699730d6b7ccd63",
-    "README.md": "6d635532728d0a97e79ee8fe911e74ae92a9e2e94f015c3d148f2b9e8c6fb66a",
-    "llms.txt": "e97fc3107d03c42f7fa47c55b7922dfb3d01a64353aa59fdc3012bf3f3fd08ca"
+    "dist/index.js": "d2539f5e56a748bd0cb4d0638fd5abf52fadd20dba8043f11c8eb256e6feb7f3",
+    "package.json": "d7c26d949ea341439a9ad95485c162365154af1effb97c158899d5b5a4b08ffb",
+    "README.md": "e4f2e67678e8e9ea1f416811255b5d800417adafcb73b032f16cf16be23aca46",
+    "llms.txt": "d7d6028b7f196e9dc826468627c761b8f22ebc7320df6f7c789efbd59d9a940f"
   },
   "notes": "dist/index.js, LICENSE, llms.txt and upstream-package.json retain the published bytes. README.md, Dockerfile, .dockerignore, glama.json, package.json, package-lock.json and server.json are maintained for this release mirror."
 }
